@@ -1,0 +1,7 @@
+import 'package:flutter/material.dart';
+import '../../utils/app_colors.dart';
+class TeacherFeedbackScreen extends StatelessWidget {
+  const TeacherFeedbackScreen({super.key});
+  @override
+  Widget build(BuildContext context) => Scaffold(appBar: AppBar(backgroundColor: AppColors.primary, foregroundColor: Colors.white, title: const Text('Nhận xét học viên')), body: ListView.builder(padding: const EdgeInsets.all(16), itemCount: 6, itemBuilder: (c, i) => Card(margin: const EdgeInsets.only(bottom: 12), child: Padding(padding: const EdgeInsets.all(16), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Row(children: [CircleAvatar(backgroundColor: AppColors.primaryLight, radius: 20, child: Text('H${i+1}')), const SizedBox(width: 12), Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('Học viên ${i+1}', style: const TextStyle(fontWeight: FontWeight.bold)), const Text('Bài: Chào hỏi', style: TextStyle(color: AppColors.textSecondary, fontSize: 13))])]), const SizedBox(height: 12), const TextField(maxLines: 2, decoration: InputDecoration(hintText: 'Nhập nhận xét...', border: OutlineInputBorder())), const SizedBox(height: 8), Align(alignment: Alignment.centerRight, child: ElevatedButton(onPressed: (){}, style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary, foregroundColor: Colors.white), child: const Text('Gửi')))])))));
+}
