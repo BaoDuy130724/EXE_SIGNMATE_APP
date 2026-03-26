@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+import '../../providers/auth_provider.dart';
 import '../../utils/app_colors.dart';
 import '../../widgets/common_widgets.dart';
 
@@ -43,6 +45,9 @@ class _FeedbackScreenState extends State<FeedbackScreen>
 
   @override
   Widget build(BuildContext context) {
+    final auth = context.watch<AuthProvider>();
+    final plan = auth.plan; // 'free', 'basic', 'pro'
+
     return Scaffold(
       backgroundColor: isCorrect ? const Color(0xFFF0FDF4) : const Color(0xFFFEF2F2),
       appBar: AppBar(
@@ -86,7 +91,7 @@ class _FeedbackScreenState extends State<FeedbackScreen>
             ),
             const SizedBox(height: 20),
 
-            // Accuracy gauge
+            // Accuracy gauge — always visible
             CustomCard(
               padding: const EdgeInsets.all(20),
               child: Column(
@@ -113,82 +118,118 @@ class _FeedbackScreenState extends State<FeedbackScreen>
                       ),
                       Text(
                         '$accuracy%',
-                        style: const TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
                       ),
                     ],
                   ),
                   const SizedBox(height: 12),
-                  Text(
-                    feedback,
-                    style: const TextStyle(fontSize: 14, height: 1.4),
-                    textAlign: TextAlign.center,
-                  ),
+                  // Basic/Pro: show feedback text
+                  if (plan != 'free')
+                    Text(
+                      feedback,
+                      style: const TextStyle(fontSize: 14, height: 1.4),
+                      textAlign: TextAlign.center,
+                    ),
                 ],
               ),
             ),
 
-            // Detailed feedback (Pro feature)
+            // UC-06 + UC-21: Plan-based detail gating
             if (!isCorrect) ...[
-              CustomCard(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Row(
-                      children: [
-                        Icon(Icons.error_outline, color: AppColors.error, size: 20),
-                        SizedBox(width: 8),
-                        Text(
-                          'Chi tiết lỗi',
-                          style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    _errorItem('✋ Tư thế tay', handShapeNote),
-                    const SizedBox(height: 10),
-                    _errorItem('📐 Góc bàn tay', angleNote),
-                  ],
-                ),
-              ),
-
-              CustomCard(
-                color: AppColors.infoLight,
-                padding: const EdgeInsets.all(16),
-                child: Row(
-                  children: [
-                    const Icon(Icons.tips_and_updates, color: AppColors.info),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+              // Pro only: Detailed error breakdown
+              if (plan == 'pro') ...[
+                CustomCard(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Row(
                         children: [
-                          const Text(
-                            'Gợi ý',
-                            style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.info),
-                          ),
-                          const SizedBox(height: 4),
+                          Icon(Icons.error_outline, color: AppColors.error, size: 20),
+                          SizedBox(width: 8),
                           Text(
-                            suggestion,
-                            style: const TextStyle(color: AppColors.info, fontSize: 13),
+                            'Chi tiết lỗi',
+                            style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
                           ),
                         ],
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 12),
+                      _errorItem('✋ Tư thế tay', handShapeNote),
+                      const SizedBox(height: 10),
+                      _errorItem('📐 Góc bàn tay', angleNote),
+                    ],
+                  ),
                 ),
-              ),
+                CustomCard(
+                  color: AppColors.infoLight,
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.tips_and_updates, color: AppColors.info),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Gợi ý',
+                              style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.info),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              suggestion,
+                              style: const TextStyle(color: AppColors.info, fontSize: 13),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+
+              // Free/Basic: show upgrade prompt for detailed feedback
+              if (plan != 'pro')
+                CustomCard(
+                  color: AppColors.warningLight,
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    children: [
+                      Row(
+                        children: [
+                          const Icon(Icons.lock_outline, color: AppColors.warning, size: 20),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              plan == 'free'
+                                  ? 'Nâng cấp để xem phản hồi chi tiết'
+                                  : 'Nâng cấp Pro để xem lỗi chi tiết (hand shape, angle)',
+                              style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 13),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      SizedBox(
+                        width: double.infinity,
+                        child: CustomButton(
+                          text: '🔓 Nâng cấp ngay',
+                          icon: Icons.star,
+                          backgroundColor: AppColors.warning,
+                          onPressed: () => context.go('/premium'),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
             ],
 
             // XP earned
             if (isCorrect)
-              CustomCard(
+              const CustomCard(
                 gradient: AppColors.primaryGradient,
-                padding: const EdgeInsets.all(16),
-                child: const Row(
+                padding: EdgeInsets.all(16),
+                child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text('⭐', style: TextStyle(fontSize: 24)),

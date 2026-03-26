@@ -110,6 +110,7 @@ class _LoginScreenState extends State<LoginScreen>
                     child: Row(
                       children: [
                         _roleTab('Học viên', 'student'),
+                        _roleTab('Trung Tâm', 'center'),
                         _roleTab('Giáo viên', 'teacher'),
                         _roleTab('Admin', 'admin'),
                       ],
@@ -165,8 +166,9 @@ class _LoginScreenState extends State<LoginScreen>
                     controller: _passwordController,
                     obscureText: _obscurePassword,
                     validator: (v) {
-                      if (v == null || v.isEmpty)
+                      if (v == null || v.isEmpty) {
                         return 'Vui lòng nhập mật khẩu';
+                      }
                       if (v.length < 6) return 'Mật khẩu tối thiểu 6 ký tự';
                       return null;
                     },
@@ -192,11 +194,15 @@ class _LoginScreenState extends State<LoginScreen>
                   Align(
                     alignment: Alignment.centerRight,
                     child: TextButton(
-                      onPressed: () {},
+                      onPressed: () => context.go('/forgot-password'),
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        minimumSize: Size.zero,
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
                       child: const Text(
                         'Quên mật khẩu?',
-                        style:
-                            TextStyle(color: AppColors.primary, fontSize: 13),
+                        style: TextStyle(color: AppColors.primary, fontSize: 13, fontWeight: FontWeight.w600),
                       ),
                     ),
                   ),
@@ -308,6 +314,9 @@ class _LoginScreenState extends State<LoginScreen>
 
       if (mounted) {
         switch (_selectedRole) {
+          case 'center':
+            context.go('/center-home');
+            break;
           case 'teacher':
             context.go('/teacher-home');
             break;

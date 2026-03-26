@@ -103,9 +103,9 @@ class LessonDetailScreen extends StatelessWidget {
                     children: [
                       Container(
                         height: 180,
-                        decoration: BoxDecoration(
+                        decoration: const BoxDecoration(
                           color: Colors.black87,
-                          borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                          borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
                         ),
                         child: Center(
                           child: Column(
@@ -143,10 +143,10 @@ class LessonDetailScreen extends StatelessWidget {
                 ),
 
                 // Tips
-                CustomCard(
+                const CustomCard(
                   color: AppColors.infoLight,
-                  padding: const EdgeInsets.all(16),
-                  child: const Row(
+                  padding: EdgeInsets.all(16),
+                  child: Row(
                     children: [
                       Icon(Icons.lightbulb_rounded, color: AppColors.info, size: 24),
                       SizedBox(width: 12),

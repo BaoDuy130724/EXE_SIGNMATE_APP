@@ -49,10 +49,10 @@ class _ContactFormScreenState extends State<ContactFormScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              CustomCard(
+              const CustomCard(
                 color: AppColors.primaryLight,
-                padding: const EdgeInsets.all(16),
-                child: const Row(
+                padding: EdgeInsets.all(16),
+                child: Row(
                   children: [
                     Icon(Icons.business, color: AppColors.primary),
                     SizedBox(width: 12),
@@ -165,7 +165,7 @@ class _ContactFormScreenState extends State<ContactFormScreen> {
               Container(
                 width: 100,
                 height: 100,
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   color: AppColors.successLight,
                   shape: BoxShape.circle,
                 ),

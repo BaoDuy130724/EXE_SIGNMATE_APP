@@ -267,11 +267,11 @@ class HomeScreen extends StatelessWidget {
                   },
                   padding: const EdgeInsets.all(16),
                   gradient: AppColors.primaryGradient,
-                  child: Row(
+                  child: const Row(
                     children: [
-                      const Text('👨‍👩‍👧', style: TextStyle(fontSize: 40)),
-                      const SizedBox(width: 16),
-                      const Expanded(
+                      Text('👨‍👩‍👧', style: TextStyle(fontSize: 40)),
+                      SizedBox(width: 16),
+                      Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -291,7 +291,7 @@ class HomeScreen extends StatelessWidget {
                           ],
                         ),
                       ),
-                      const Icon(Icons.play_circle_fill, color: Colors.white, size: 40),
+                      Icon(Icons.play_circle_fill, color: Colors.white, size: 40),
                     ],
                   ),
                 ),

@@ -115,46 +115,100 @@ class ProfileScreen extends StatelessWidget {
               ),
             ),
 
-            // Weekly Stats
-            CustomCard(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('Thống kê tuần này', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                  const SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      _barDay('T2', 0.8),
-                      _barDay('T3', 0.6),
-                      _barDay('T4', 1.0),
-                      _barDay('T5', 0.4),
-                      _barDay('T6', 0.7),
-                      _barDay('T7', 0.3),
-                      _barDay('CN', 0.0),
-                    ],
-                  ),
-                ],
+            // Weekly Stats — UC-09 plan gating
+            if (auth.isPremium) ...[
+              CustomCard(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        const Text('Thống kê tuần này', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                        if (auth.isPro) ...[
+                          const Spacer(),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: AppColors.warningLight,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Text('PRO', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.warning)),
+                          ),
+                        ],
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        _barDay('T2', 0.8),
+                        _barDay('T3', 0.6),
+                        _barDay('T4', 1.0),
+                        _barDay('T5', 0.4),
+                        _barDay('T6', 0.7),
+                        _barDay('T7', 0.3),
+                        _barDay('CN', 0.0),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ),
 
-            // Weak Topics
-            CustomCard(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('Chủ đề chưa tốt', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                  const SizedBox(height: 12),
-                  _weakTopic('Cảm xúc', 45, '😊'),
-                  const SizedBox(height: 8),
-                  _weakTopic('Gia đình', 55, '👨‍👩‍👧'),
-                  const SizedBox(height: 8),
-                  _weakTopic('Thức ăn', 60, '🍔'),
-                ],
+              // Weak Topics
+              CustomCard(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('Chủ đề chưa tốt', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                    const SizedBox(height: 12),
+                    _weakTopic('Cảm xúc', 45, '😊'),
+                    const SizedBox(height: 8),
+                    _weakTopic('Gia đình', 55, '👨‍👩‍👧'),
+                    const SizedBox(height: 8),
+                    _weakTopic('Thức ăn', 60, '🍔'),
+                  ],
+                ),
               ),
-            ),
+            ] else ...[
+              // Free plan — locked
+              CustomCard(
+                color: AppColors.warningLight,
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  children: [
+                    const Icon(Icons.lock_outline, color: AppColors.warning, size: 32),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'Nâng cấp để xem thống kê chi tiết',
+                      style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 4),
+                    const Text(
+                      'Biểu đồ tuần, chủ đề yếu, và phân tích nâng cao',
+                      style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: () => context.go('/premium'),
+                        icon: const Icon(Icons.star, size: 18),
+                        label: const Text('Nâng cấp ngay'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.warning,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
 
             // Menu
             CustomCard(
@@ -164,6 +218,8 @@ class ProfileScreen extends StatelessWidget {
                   _menuItem(Icons.workspace_premium, 'Nâng cấp Premium', () => context.go('/premium'), color: AppColors.xpGold),
                   const Divider(height: 1, indent: 56),
                   _menuItem(Icons.settings, 'Cài đặt', () {}),
+                  const Divider(height: 1, indent: 56),
+                  _menuItem(Icons.lock_reset, 'Đổi mật khẩu', () => context.go('/change-password')),
                   const Divider(height: 1, indent: 56),
                   _menuItem(Icons.help_outline, 'Trợ giúp', () {}),
                   const Divider(height: 1, indent: 56),

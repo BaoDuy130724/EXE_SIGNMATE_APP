@@ -24,16 +24,19 @@ class PremiumScreen extends StatelessWidget {
         child: Column(
           children: [
             // Header
-            CustomCard(
+            const CustomCard(
               gradient: AppColors.premiumGradient,
-              padding: const EdgeInsets.all(28),
-              child: const Column(
+              padding: EdgeInsets.all(28),
+              child: Column(
                 children: [
                   Text('⭐', style: TextStyle(fontSize: 56)),
                   SizedBox(height: 12),
                   Text(
                     'Chọn gói phù hợp',
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
+                    style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white),
                   ),
                   SizedBox(height: 6),
                   Text(
@@ -51,7 +54,9 @@ class PremiumScreen extends StatelessWidget {
               alignment: Alignment.centerLeft,
               child: Padding(
                 padding: EdgeInsets.only(left: 4, bottom: 8, top: 8),
-                child: Text('Cá nhân', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                child: Text('Cá nhân',
+                    style:
+                        TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               ),
             ),
 
@@ -110,7 +115,9 @@ class PremiumScreen extends StatelessWidget {
               alignment: Alignment.centerLeft,
               child: Padding(
                 padding: EdgeInsets.only(left: 4, bottom: 8),
-                child: Text('Tổ chức & Trung tâm', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                child: Text('Tổ chức & Trung tâm',
+                    style:
+                        TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               ),
             ),
 
@@ -126,31 +133,41 @@ class PremiumScreen extends StatelessWidget {
                       SizedBox(width: 8),
                       Text(
                         'B2B - Trung tâm',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
                       ),
                     ],
                   ),
                   const SizedBox(height: 8),
                   const Text(
-                    '39,000đ / học viên / tháng',
-                    style: TextStyle(fontSize: 16, color: AppColors.primary, fontWeight: FontWeight.w600),
+                    '79,000đ / học viên / tháng',
+                    style: TextStyle(
+                        fontSize: 16,
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.w600),
                   ),
                   const Text(
                     'Tối thiểu 20 học viên',
-                    style: TextStyle(color: AppColors.textSecondary, fontSize: 13),
+                    style:
+                        TextStyle(color: AppColors.textSecondary, fontSize: 13),
                   ),
                   const SizedBox(height: 12),
-                  ...['Dashboard giáo viên', 'Quản lý lớp học', 'Theo dõi học viên', 'Báo cáo hiệu suất']
-                      .map((f) => Padding(
-                            padding: const EdgeInsets.only(bottom: 6),
-                            child: Row(
-                              children: [
-                                const Icon(Icons.check_circle, color: AppColors.success, size: 18),
-                                const SizedBox(width: 8),
-                                Text(f, style: const TextStyle(fontSize: 14)),
-                              ],
-                            ),
-                          )),
+                  ...[
+                    'Dashboard giáo viên',
+                    'Quản lý lớp học',
+                    'Theo dõi học viên',
+                    'Báo cáo hiệu suất'
+                  ].map((f) => Padding(
+                        padding: const EdgeInsets.only(bottom: 6),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.check_circle,
+                                color: AppColors.success, size: 18),
+                            const SizedBox(width: 8),
+                            Text(f, style: const TextStyle(fontSize: 14)),
+                          ],
+                        ),
+                      )),
                   const SizedBox(height: 16),
                   CustomButton(
                     text: 'Liên hệ tư vấn',
@@ -189,12 +206,16 @@ class PremiumScreen extends StatelessWidget {
               padding: const EdgeInsets.symmetric(vertical: 6),
               decoration: BoxDecoration(
                 color: color,
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(14)),
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(14)),
               ),
               child: const Text(
                 '⭐ Phổ biến nhất',
                 textAlign: TextAlign.center,
-                style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 13),
+                style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 13),
               ),
             ),
           Padding(
@@ -206,12 +227,18 @@ class PremiumScreen extends StatelessWidget {
                   children: [
                     Text(
                       name,
-                      style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: color),
+                      style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          color: color),
                     ),
                     const Spacer(),
                     Text(
                       price,
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: color),
+                      style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: color),
                     ),
                   ],
                 ),
@@ -222,7 +249,9 @@ class PremiumScreen extends StatelessWidget {
                         children: [
                           Icon(Icons.check_circle, color: color, size: 18),
                           const SizedBox(width: 8),
-                          Expanded(child: Text(f, style: const TextStyle(fontSize: 14))),
+                          Expanded(
+                              child: Text(f,
+                                  style: const TextStyle(fontSize: 14))),
                         ],
                       ),
                     )),

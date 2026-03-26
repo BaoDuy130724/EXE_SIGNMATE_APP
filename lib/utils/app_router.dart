@@ -3,6 +3,8 @@ import '../screens/auth/splash_screen.dart';
 import '../screens/auth/login_screen.dart';
 import '../screens/auth/register_screen.dart';
 import '../screens/auth/register_step2_screen.dart';
+import '../screens/auth/forgot_password_screen.dart';
+import '../screens/auth/change_password_screen.dart';
 import '../screens/auth/quiz_screen.dart';
 import '../screens/auth/complete_screen.dart';
 import '../screens/home/home_screen.dart';
@@ -29,6 +31,11 @@ import '../screens/teacher/teacher_class_screen.dart';
 import '../screens/teacher/teacher_students_screen.dart';
 import '../screens/teacher/teacher_lessons_screen.dart';
 import '../screens/teacher/teacher_feedback_screen.dart';
+import '../screens/center/center_home_screen.dart';
+import '../screens/center/center_classes_screen.dart';
+import '../screens/center/center_class_detail_screen.dart';
+import '../screens/center/center_students_screen.dart';
+import '../screens/center/center_reports_screen.dart';
 
 class AppRouter {
   static final GoRouter router = GoRouter(
@@ -39,6 +46,8 @@ class AppRouter {
       GoRoute(path: '/login', builder: (_, __) => const LoginScreen()),
       GoRoute(path: '/register', builder: (_, __) => const RegisterScreen()),
       GoRoute(path: '/register-step2', builder: (_, __) => const RegisterStep2Screen()),
+      GoRoute(path: '/forgot-password', builder: (_, __) => const ForgotPasswordScreen()),
+      GoRoute(path: '/change-password', builder: (_, __) => const ChangePasswordScreen()),
       GoRoute(path: '/quiz', builder: (_, __) => const QuizScreen()),
       GoRoute(path: '/complete', builder: (_, __) => const CompleteScreen()),
 
@@ -79,6 +88,13 @@ class AppRouter {
       GoRoute(path: '/teacher-students', builder: (_, __) => const TeacherStudentsScreen()),
       GoRoute(path: '/teacher-lessons', builder: (_, __) => const TeacherLessonsScreen()),
       GoRoute(path: '/teacher-feedback', builder: (_, __) => const TeacherFeedbackScreen()),
+
+      // Center
+      GoRoute(path: '/center-home', builder: (_, __) => const CenterHomeScreen()),
+      GoRoute(path: '/center-classes', builder: (_, __) => const CenterClassesScreen()),
+      GoRoute(path: '/center-class-detail', builder: (_, __) => const CenterClassDetailScreen()),
+      GoRoute(path: '/center-students', builder: (_, __) => const CenterStudentsScreen()),
+      GoRoute(path: '/center-reports', builder: (_, __) => const CenterReportsScreen()),
     ],
   );
 }
