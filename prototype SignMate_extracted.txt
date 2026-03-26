@@ -1,0 +1,148 @@
+I. PRODUCT STRUCTURE (FINAL – CHUẨN)
+4 ROLE CHÍNH
+B2C Learner (user thường)
+B2B Student (giống B2C UI)
+Teacher (quản lý lớp)
+Center Admin (quản lý trung tâm)
+Super Admin (toàn hệ thống)
+🎯 II. PRICING (PHẢI RÕ ĐỂ DESIGN)
+🟦 B2C (Individual)
+🟢 Free Plan
+5 lessons/day
+Basic correct / incorrect
+No analytics
+No detailed feedback
+🔵 Basic Plan – 49,000 VND/month
+Unlimited lessons
+Basic feedback
+Progress tracking
+Streak system
+🔴 Pro Plan – 99,000 VND/month
+Detailed AI correction
+Error explanation (hand shape, angle)
+Weak area detection
+Advanced analytics
+🟪 B2B (Center)
+👉 KHÔNG cho mua trực tiếp
+Pricing:
+39,000 VND / learner / month
+Minimum: 20 seats
+B2B includes:
+Teacher dashboard
+Class management
+Student tracking
+Performance reports
+❗ UI RULE (QUAN TRỌNG)
+👉 B2B phải:
+❌ KHÔNG có nút “Buy now”
+✅ Có nút: “Contact us”
+Form:
+Center name
+Contact person
+Phone / Email
+Number of learners
+🎯 III. B2C USER FLOW (CHI TIẾT UI)
+1. AUTH SCREEN
+Login / Signup
+Google login
+Role: Learner
+2. ONBOARDING
+Goal:
+School / Family / Work
+Level:
+Beginner / Intermediate
+3. DASHBOARD
+Accuracy %
+Streak
+Continue button
+Upgrade button
+Suggested lesson
+4. LESSON LIBRARY
+Topic
+Level
+Duration
+Progress %
+5. PRACTICE SCREEN (CORE)
+Sample video
+Camera preview
+Start button
+Timer
+6. FEEDBACK SCREEN (QUAN TRỌNG NHẤT)
+Correct:
+Accuracy 85%
+Incorrect:
+Hand shape incorrect
+Suggestion:“Raise your wrist”
+Button:
+Retry
+7. SUMMARY SCREEN
+Accuracy
+Attempts
+Mistakes
+Next lesson
+8. PROGRESS SCREEN
+Chart
+Weak topics
+Streak
+9. GAME SCREEN
+👉 Sau mỗi lesson
+Mini game:
+chọn đúng sign
+match gesture
+Reward:
+XP / streak
+🎯 IV. B2B SYSTEM (CHI TIẾT)
+🟦 1. CENTER ADMIN DASHBOARD
+Total students
+Active learners
+Average accuracy
+🟦 2. CLASS MANAGEMENT
+Create class
+Add students
+Assign lessons
+🟦 3. STUDENT TRACKING
+Accuracy %
+Weak topics
+Practice frequency
+🟦 4. REPORT
+Export PDF
+Weekly report
+🎯 V. TEACHER DASHBOARD
+👉 Nhẹ hơn Admin
+View class
+Assign lesson
+Track students
+Comment (optional)
+🎯 VI. SUPER ADMIN (SYSTEM)
+👉 Không cần design full, chỉ 1 screen
+Dashboard:
+Total users
+Total revenue
+Active centers
+Conversion rate
+Manage:
+Users
+Centers
+Plans
+Content
+🎯 VII. UI REQUIREMENTS (THEO YÊU CẦU BẠN)
+✔ Logo luôn hiện (header)✔ Gamification (mini game)✔ UI đơn giản, dễ hiểu
+🎯 VIII. SCREEN LIST (FINAL – GỬI FIGMA)
+B2C (9 screens)
+Login
+Onboarding
+Dashboard
+Lesson list
+Practice
+Feedback
+Summary
+Progress
+Game
+B2B (4 screens)
+Center dashboard
+Class management
+Student tracking
+Report
+System
+Super Admin dashboard
+B2B contact form

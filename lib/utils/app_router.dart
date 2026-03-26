@@ -8,14 +8,18 @@ import '../screens/auth/complete_screen.dart';
 import '../screens/home/home_screen.dart';
 import '../screens/home/home_new_screen.dart';
 import '../screens/lesson/lesson_screen.dart';
+import '../screens/lesson/lesson_detail_screen.dart';
 import '../screens/practice/practice_screen.dart';
 import '../screens/practice/practice_camera_screen.dart';
+import '../screens/practice/feedback_screen.dart';
 import '../screens/practice/result_correct_screen.dart';
 import '../screens/practice/result_wrong_screen.dart';
 import '../screens/practice/result_summary_screen.dart';
 import '../screens/profile/profile_screen.dart';
 import '../screens/premium/premium_screen.dart';
 import '../screens/premium/premium_payment_screen.dart';
+import '../screens/premium/contact_form_screen.dart';
+import '../screens/game/game_screen.dart';
 import '../screens/admin/admin_login_screen.dart';
 import '../screens/admin/admin_home_screen.dart';
 import '../screens/admin/admin_reports_screen.dart';
@@ -41,15 +45,27 @@ class AppRouter {
       // Main App
       GoRoute(path: '/home', builder: (_, __) => const HomeScreen()),
       GoRoute(path: '/home-new', builder: (_, __) => const HomeNewScreen()),
+
+      // Lessons
       GoRoute(path: '/lesson', builder: (_, __) => const LessonScreen()),
+      GoRoute(path: '/lesson-detail', builder: (_, __) => const LessonDetailScreen()),
+
+      // Practice & Feedback
       GoRoute(path: '/practice', builder: (_, __) => const PracticeScreen()),
       GoRoute(path: '/practice-camera', builder: (_, __) => const PracticeCameraScreen()),
+      GoRoute(path: '/feedback', builder: (_, __) => const FeedbackScreen()),
       GoRoute(path: '/result-correct', builder: (_, __) => const ResultCorrectScreen()),
       GoRoute(path: '/result-wrong', builder: (_, __) => const ResultWrongScreen()),
       GoRoute(path: '/result-summary', builder: (_, __) => const ResultSummaryScreen()),
+
+      // Game
+      GoRoute(path: '/game', builder: (_, __) => const GameScreen()),
+
+      // Profile & Premium
       GoRoute(path: '/profile', builder: (_, __) => const ProfileScreen()),
       GoRoute(path: '/premium', builder: (_, __) => const PremiumScreen()),
       GoRoute(path: '/premium-payment', builder: (_, __) => const PremiumPaymentScreen()),
+      GoRoute(path: '/contact-form', builder: (_, __) => const ContactFormScreen()),
 
       // Admin
       GoRoute(path: '/admin-login', builder: (_, __) => const AdminLoginScreen()),

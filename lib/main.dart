@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'providers/auth_provider.dart';
 import 'providers/lesson_provider.dart';
 import 'providers/theme_provider.dart';
 import 'utils/app_router.dart';
-import 'utils/app_colors.dart';
+import 'utils/app_theme.dart';
+import 'utils/app_constants.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -27,15 +27,9 @@ class SignLanguageApp extends StatelessWidget {
       child: Consumer<ThemeProvider>(
         builder: (context, themeProvider, child) {
           return MaterialApp.router(
-            title: 'Sign Language Learning',
+            title: AppConstants.appName,
             debugShowCheckedModeBanner: false,
-            theme: ThemeData(
-              useMaterial3: true,
-              colorSchemeSeed: AppColors.primary,
-              brightness: Brightness.light,
-              textTheme: GoogleFonts.interTextTheme(),
-              scaffoldBackgroundColor: const Color(0xFFF5F5F5),
-            ),
+            theme: AppTheme.lightTheme,
             routerConfig: AppRouter.router,
           );
         },
