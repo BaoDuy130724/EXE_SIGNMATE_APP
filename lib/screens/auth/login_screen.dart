@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
+import '../../providers/lesson_provider.dart';
 import '../../utils/app_colors.dart';
 import '../../utils/app_constants.dart';
 import '../../widgets/common_widgets.dart';
@@ -310,22 +311,28 @@ class _LoginScreenState extends State<LoginScreen>
     try {
       final auth = context.read<AuthProvider>();
       auth.setRole(_selectedRole);
-      await auth.login(_emailController.text, _passwordController.text);
+      final success = await auth.login(
+        _emailController.text,
+        _passwordController.text,
+      );
 
-      if (mounted) {
-        switch (_selectedRole) {
-          case 'center':
-            context.go('/center-home');
-            break;
-          case 'teacher':
-            context.go('/teacher-home');
-            break;
-          case 'admin':
-            context.go('/admin-home');
-            break;
-          default:
-            context.go('/home');
+      if (!mounted) return;
+
+      if (success) {
+        // Pre-fetch courses from API
+        context.read<LessonProvider>().loadCourses();
+        final role = auth.userRole;
+        if (role == 'center_admin') {
+          context.go('/center-home');
+        } else if (role == 'teacher') {
+          context.go('/teacher-home');
+        } else {
+          context.go('/home');
         }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Đăng nhập thất bại. Vui lòng kiểm tra lại backend hoặc thông tin đăng nhập.')),
+        );
       }
     } catch (e) {
       setState(() => _errorMessage = 'Đăng nhập thất bại. Vui lòng thử lại.');

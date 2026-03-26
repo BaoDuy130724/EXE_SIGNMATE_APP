@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+import '../../providers/auth_provider.dart';
 import '../../utils/app_colors.dart';
 import '../../widgets/common_widgets.dart';
 
@@ -15,6 +17,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscure = true;
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -173,12 +176,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                 CustomButton(
                   text: 'Tiếp tục',
+                  isLoading: _isLoading,
                   icon: Icons.arrow_forward_rounded,
-                  onPressed: () {
-                    if (_formKey.currentState!.validate()) {
-                      context.go('/register-step2');
-                    }
-                  },
+                  onPressed: _handleRegister,
                 ),
                 const SizedBox(height: 20),
 
@@ -208,5 +208,37 @@ class _RegisterScreenState extends State<RegisterScreen> {
         ),
       ),
     );
+  }
+
+  Future<void> _handleRegister() async {
+    if (!_formKey.currentState!.validate()) return;
+    
+    setState(() => _isLoading = true);
+    
+    try {
+       final auth = context.read<AuthProvider>();
+       final success = await auth.register(
+         _nameController.text,
+         _emailController.text,
+         _passwordController.text,
+       );
+       
+       if (!mounted) return;
+       
+       if (success) {
+         // Proceed to onboarding flow
+         context.go('/register-step2');
+       } else {
+         ScaffoldMessenger.of(context).showSnackBar(
+           const SnackBar(content: Text('Đăng ký thất bại. Email có thể đã tồn tại.')),
+         );
+       }
+    } catch (e) {
+       ScaffoldMessenger.of(context).showSnackBar(
+         const SnackBar(content: Text('Có lỗi xảy ra khi kết nối máy chủ.')),
+       );
+    } finally {
+       if (mounted) setState(() => _isLoading = false);
+    }
   }
 }

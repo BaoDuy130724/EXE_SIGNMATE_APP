@@ -37,7 +37,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
           backgroundColor: AppColors.success,
         ),
       );
-      context.pop();
+      context.go('/profile');
     }
   }
 

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+import '../../providers/lesson_provider.dart';
 import '../../utils/app_colors.dart';
 import '../../widgets/common_widgets.dart';
 
@@ -131,7 +133,10 @@ class _CompleteScreenState extends State<CompleteScreen>
               CustomButton(
                 text: 'Bắt đầu học ngay!',
                 icon: Icons.rocket_launch_rounded,
-                onPressed: () => context.go('/home'),
+                onPressed: () {
+                   context.read<LessonProvider>().loadCourses();
+                   context.go('/home');
+                },
               ),
               const SizedBox(height: 20),
             ],

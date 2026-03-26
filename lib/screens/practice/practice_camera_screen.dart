@@ -77,7 +77,7 @@ class _PracticeCameraScreenState extends State<PracticeCameraScreen> {
 
   Future<void> _captureAndAnalyze() async {
     setState(() { _isAnalyzing = true; _feedback = ''; });
-    // TODO: Capture image from CameraController and convert to Uint8List
+    // Tích hợp CameraController để lấy ảnh và phân tích AI.
     // final image = await _cameraController.takePicture();
     // final bytes = await image.readAsBytes();
     // final result = await _gemini.getPracticeFeedback(imageBytes: bytes, targetSign: _targetSign);

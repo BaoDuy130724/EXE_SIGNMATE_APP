@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import '../utils/app_constants.dart';
+import '../services/auth_service.dart';
 
 class AuthProvider extends ChangeNotifier {
+  final AuthService _authService = AuthService();
+
   bool _isLoggedIn = false;
   String _userRole = AppConstants.roleStudent;
   String _userName = '';
@@ -30,33 +33,53 @@ class AuthProvider extends ChangeNotifier {
   String get goal => _goal;
   String get skillLevel => _skillLevel;
 
-  Future<bool> login(String email, String password) async {
-    // TODO: Firebase Auth
-    await Future.delayed(const Duration(seconds: 1));
-    _isLoggedIn = true;
-    _email = email;
-    _userName = email.split('@').first;
-    _streak = 5;
-    _totalXp = 1250;
-    _level = 4;
-    _lessonsCompleted = 18;
-    _practiceAccuracy = 78;
+  /// Fetches the current user profile using stored token on app startup
+  Future<void> autoLogin() async {
+    try {
+      final user = await _authService.getMe();
+      _isLoggedIn = true;
+      _populateFromModel(user);
+    } catch (e) {
+      _isLoggedIn = false;
+    }
     notifyListeners();
-    return true;
+  }
+
+  Future<bool> login(String email, String password) async {
+    try {
+      final user = await _authService.login(email, password);
+      _isLoggedIn = true;
+      _populateFromModel(user);
+      return true;
+    } catch (e) {
+      debugPrint('Login Error: $e');
+      return false;
+    }
   }
 
   Future<bool> register(String name, String email, String password) async {
-    await Future.delayed(const Duration(seconds: 1));
-    _isLoggedIn = true;
-    _userName = name;
-    _email = email;
-    _streak = 0;
-    _totalXp = 0;
-    _level = 1;
-    _lessonsCompleted = 0;
-    _practiceAccuracy = 0;
+    try {
+      final user = await _authService.register(name, email, password);
+      _isLoggedIn = true;
+      _populateFromModel(user);
+      return true;
+    } catch (e) {
+      debugPrint('Register Error: $e');
+      return false;
+    }
+  }
+
+  void _populateFromModel(dynamic user) {
+    _userName = user.name;
+    _email = user.email;
+    _userRole = user.userRole;
+    _plan = user.plan;
+    _streak = user.streak;
+    _totalXp = user.totalXp;
+    _level = user.level;
+    _lessonsCompleted = user.lessonsCompleted;
+    _practiceAccuracy = user.practiceAccuracy;
     notifyListeners();
-    return true;
   }
 
   void setRole(String role) {
@@ -64,10 +87,17 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void setOnboarding({required String goal, required String skillLevel}) {
-    _goal = goal;
-    _skillLevel = skillLevel;
-    notifyListeners();
+  Future<bool> submitOnboarding({required String goal, required String skillLevel}) async {
+    try {
+      await _authService.submitOnboarding({'goal': goal, 'level': skillLevel});
+      _goal = goal;
+      _skillLevel = skillLevel;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      debugPrint('Onboarding Error: $e');
+      return false;
+    }
   }
 
   void upgradePlan(String plan) {
@@ -82,7 +112,6 @@ class AuthProvider extends ChangeNotifier {
 
   void addXp(int xp) {
     _totalXp += xp;
-    // Level up every 500 XP
     _level = (_totalXp / 500).floor() + 1;
     notifyListeners();
   }
@@ -103,7 +132,8 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void logout() {
+  Future<void> logout() async {
+    await _authService.logout();
     _isLoggedIn = false;
     _userName = '';
     _email = '';
@@ -111,6 +141,8 @@ class AuthProvider extends ChangeNotifier {
     _streak = 0;
     _totalXp = 0;
     _level = 1;
+    _lessonsCompleted = 0;
+    _practiceAccuracy = 0;
     notifyListeners();
   }
 }

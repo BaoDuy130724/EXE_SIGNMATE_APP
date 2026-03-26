@@ -7,8 +7,25 @@ import '../../utils/app_colors.dart';
 import '../../widgets/common_widgets.dart';
 import '../../widgets/bottom_nav_bar.dart';
 
-class HomeScreen extends StatelessWidget {
+import '../../services/dashboard_service.dart';
+import '../../models/dashboard_summary_model.dart';
+
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  final DashboardService _dashboardService = DashboardService();
+  Future<DashboardSummaryModel>? _summaryFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _summaryFuture = _dashboardService.getSummary();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -17,8 +34,13 @@ class HomeScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: CustomScrollView(
-        slivers: [
+      body: FutureBuilder<DashboardSummaryModel>(
+        future: _summaryFuture,
+        builder: (context, snapshot) {
+          final summary = snapshot.data;
+          
+          return CustomScrollView(
+            slivers: [
           // App Bar
           SliverAppBar(
             expandedHeight: 140,
@@ -65,7 +87,7 @@ class HomeScreen extends StatelessWidget {
                                   const SizedBox(height: 2),
                                   Row(
                                     children: [
-                                      StreakWidget(streak: auth.streak, compact: true),
+                                      StreakWidget(streak: summary?.currentStreak ?? auth.streak, compact: true),
                                       const SizedBox(width: 8),
                                       PlanBadge(plan: auth.plan),
                                     ],
@@ -92,51 +114,6 @@ class HomeScreen extends StatelessWidget {
             padding: const EdgeInsets.all(16),
             sliver: SliverList(
               delegate: SliverChildListDelegate([
-                // Daily Goal Card
-                CustomCard(
-                  gradient: AppColors.primaryGradient,
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Row(
-                        children: [
-                          Icon(Icons.flag_rounded, color: Colors.white, size: 22),
-                          SizedBox(width: 8),
-                          Text(
-                            'Mục tiêu hôm nay',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 14),
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(10),
-                        child: const LinearProgressIndicator(
-                          value: 0.6,
-                          minHeight: 10,
-                          backgroundColor: Colors.white30,
-                          valueColor: AlwaysStoppedAnimation(Colors.white),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        '3/5 bài học hoàn thành',
-                        style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.9),
-                          fontSize: 13,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
-                const SizedBox(height: 8),
-
                 // Stats Row
                 Row(
                   children: [
@@ -149,7 +126,7 @@ class HomeScreen extends StatelessWidget {
                             const Text('🎯', style: TextStyle(fontSize: 28)),
                             const SizedBox(height: 6),
                             Text(
-                              '${auth.practiceAccuracy}%',
+                              '${summary?.averageAccuracy.toInt() ?? auth.practiceAccuracy}%',
                               style: const TextStyle(
                                 fontSize: 22,
                                 fontWeight: FontWeight.bold,
@@ -253,54 +230,13 @@ class HomeScreen extends StatelessWidget {
                   (e) => _lessonCard(context, e.value, e.key, lessons),
                 ),
 
-                // Suggested lesson
-                const SizedBox(height: 16),
-                const Text(
-                  'Gợi ý cho bạn',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 12),
-                CustomCard(
-                  onTap: () {
-                    lessons.startLesson(3);
-                    context.go('/lesson');
-                  },
-                  padding: const EdgeInsets.all(16),
-                  gradient: AppColors.primaryGradient,
-                  child: const Row(
-                    children: [
-                      Text('👨‍👩‍👧', style: TextStyle(fontSize: 40)),
-                      SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Gia đình',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 18,
-                                color: Colors.white,
-                              ),
-                            ),
-                            SizedBox(height: 4),
-                            Text(
-                              '12 bài học • Phù hợp với mục tiêu',
-                              style: TextStyle(color: Colors.white70, fontSize: 13),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Icon(Icons.play_circle_fill, color: Colors.white, size: 40),
-                    ],
-                  ),
-                ),
-
                 const SizedBox(height: 100), // Space for bottom nav
               ]),
             ),
           ),
-        ],
+            ],
+          );
+        },
       ),
       bottomNavigationBar: const AppBottomNavBar(currentIndex: 0),
     );

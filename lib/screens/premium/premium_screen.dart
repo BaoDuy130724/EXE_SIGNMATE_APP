@@ -1,8 +1,10 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../utils/app_colors.dart';
-import '../../utils/app_constants.dart';
+
 import '../../widgets/common_widgets.dart';
+import '../../services/subscription_service.dart';
 
 class PremiumScreen extends StatelessWidget {
   const PremiumScreen({super.key});
@@ -49,134 +51,81 @@ class PremiumScreen extends StatelessWidget {
 
             const SizedBox(height: 8),
 
-            // B2C Plans
-            const Align(
-              alignment: Alignment.centerLeft,
-              child: Padding(
-                padding: EdgeInsets.only(left: 4, bottom: 8, top: 8),
-                child: Text('Cá nhân',
-                    style:
-                        TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              ),
-            ),
+            FutureBuilder<List<dynamic>>(
+              future: Future.wait([
+                SubscriptionService().getPlans(),
+                SubscriptionService().getMySubscription()
+              ]),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Padding(
+                    padding: EdgeInsets.all(20.0),
+                    child: Center(child: CircularProgressIndicator()),
+                  );
+                }
+                
+                final plans = (snapshot.data?[0] as List?)?.cast<Map<String, dynamic>>() ?? [];
+                final mySub = snapshot.data?[1] as Map<String, dynamic>?;
+                
+                if (plans.isEmpty) {
+                  return const Padding(
+                    padding: EdgeInsets.all(20.0),
+                    child: Text('Đang cập nhật các gói từ Máy chủ...'),
+                  );
+                }
 
-            // Free Plan
-            _planCard(
-              context,
-              name: 'Free',
-              price: 'Miễn phí',
-              features: [
-                '5 bài học / ngày',
-                'Phản hồi đúng / sai cơ bản',
-                'Không có phân tích',
-              ],
-              color: AppColors.planFree,
-              isPopular: false,
-              planType: AppConstants.planFree,
-            ),
-
-            // Basic Plan
-            _planCard(
-              context,
-              name: 'Basic',
-              price: '49,000đ/tháng',
-              features: [
-                'Không giới hạn bài học',
-                'Phản hồi chi tiết cơ bản',
-                'Theo dõi tiến độ',
-                'Hệ thống streak',
-              ],
-              color: AppColors.planBasic,
-              isPopular: false,
-              planType: AppConstants.planBasic,
-            ),
-
-            // Pro Plan
-            _planCard(
-              context,
-              name: 'Pro',
-              price: '99,000đ/tháng',
-              features: [
-                'Phân tích AI chi tiết',
-                'Giải thích lỗi (tư thế, góc tay)',
-                'Phát hiện điểm yếu',
-                'Phân tích nâng cao',
-                'Không quảng cáo',
-              ],
-              color: AppColors.planPro,
-              isPopular: true,
-              planType: AppConstants.planPro,
-            ),
-
-            const SizedBox(height: 16),
-
-            // B2B Section
-            const Align(
-              alignment: Alignment.centerLeft,
-              child: Padding(
-                padding: EdgeInsets.only(left: 4, bottom: 8),
-                child: Text('Tổ chức & Trung tâm',
-                    style:
-                        TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-              ),
-            ),
-
-            CustomCard(
-              padding: const EdgeInsets.all(20),
-              border: Border.all(color: AppColors.primary, width: 1.5),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Row(
-                    children: [
-                      Icon(Icons.business, color: AppColors.primary),
-                      SizedBox(width: 8),
-                      Text(
-                        'B2B - Trung tâm',
-                        style: TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    '79,000đ / học viên / tháng',
-                    style: TextStyle(
-                        fontSize: 16,
-                        color: AppColors.primary,
-                        fontWeight: FontWeight.w600),
-                  ),
-                  const Text(
-                    'Tối thiểu 20 học viên',
-                    style:
-                        TextStyle(color: AppColors.textSecondary, fontSize: 13),
-                  ),
-                  const SizedBox(height: 12),
-                  ...[
-                    'Dashboard giáo viên',
-                    'Quản lý lớp học',
-                    'Theo dõi học viên',
-                    'Báo cáo hiệu suất'
-                  ].map((f) => Padding(
-                        padding: const EdgeInsets.only(bottom: 6),
-                        child: Row(
-                          children: [
-                            const Icon(Icons.check_circle,
-                                color: AppColors.success, size: 18),
-                            const SizedBox(width: 8),
-                            Text(f, style: const TextStyle(fontSize: 14)),
-                          ],
+                // Determine current plan based on BE response
+                final String? currentPlanId = mySub?['isActive'] == true ? mySub!['planId']?.toString() : null;
+                
+                final b2cPlans = plans.where((p) => p['type'] != 'B2B').toList();
+                final b2bPlans = plans.where((p) => p['type'] == 'B2B').toList();
+                
+                // Sort B2C plans by priceVnd ascending (Free first, then Basic, then Pro)
+                b2cPlans.sort((a, b) => (a['priceVnd'] ?? 0).compareTo(b['priceVnd'] ?? 0));
+                
+                return Column(
+                  children: [
+                    // --- B2C Section ---
+                    if (b2cPlans.isNotEmpty) ...[
+                      const Align(
+                        alignment: Alignment.centerLeft,
+                        child: Padding(
+                          padding: EdgeInsets.only(left: 4, bottom: 8, top: 8),
+                          child: Text('Cá nhân',
+                              style:
+                                  TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                         ),
-                      )),
-                  const SizedBox(height: 16),
-                  CustomButton(
-                    text: 'Liên hệ tư vấn',
-                    icon: Icons.mail_outline,
-                    isOutlined: true,
-                    onPressed: () => context.go('/contact-form'),
-                  ),
-                ],
-              ),
+                      ),
+                      ...b2cPlans.map((plan) {
+                        final String planId = plan['id']?.toString() ?? '';
+                        final num price = plan['priceVnd'] ?? 0;
+                        // If user has no active subscription from BE, the 0 VND plan (Free) is their active plan by default
+                        final bool isCurrent = currentPlanId == planId || (currentPlanId == null && price == 0);
+                        return _buildDynamicPlanCard(context, plan, isCurrentPlan: isCurrent);
+                      }),
+                      const SizedBox(height: 16),
+                    ],
+
+                    // --- B2B Section ---
+                    if (b2bPlans.isNotEmpty) ...[
+                      const Align(
+                        alignment: Alignment.centerLeft,
+                        child: Padding(
+                          padding: EdgeInsets.only(left: 4, bottom: 8),
+                          child: Text('Tổ chức & Trung tâm',
+                              style:
+                                  TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                        ),
+                      ),
+                      ...b2bPlans.map((plan) {
+                        final String planId = plan['id']?.toString() ?? '';
+                        final bool isCurrent = currentPlanId == planId;
+                        return _buildDynamicPlanCard(context, plan, isCurrentPlan: isCurrent);
+                      }),
+                    ]
+                  ],
+                );
+              },
             ),
             const SizedBox(height: 40),
           ],
@@ -185,22 +134,59 @@ class PremiumScreen extends StatelessWidget {
     );
   }
 
-  Widget _planCard(
-    BuildContext context, {
-    required String name,
-    required String price,
-    required List<String> features,
-    required Color color,
-    required bool isPopular,
-    required String planType,
-  }) {
+  Widget _buildDynamicPlanCard(BuildContext context, Map<String, dynamic> plan, {bool isCurrentPlan = false}) {
+    final planName = plan['name']?.toString() ?? 'Premium';
+    final priceVnd = plan['priceVnd'] ?? 0;
+    final priceStr = priceVnd == 0 ? 'Miễn phí' : '$priceVndđ/tháng';
+    
+    List<String> featureList = [];
+    if (plan['featuresJson'] != null && plan['featuresJson'].toString().isNotEmpty) {
+      try {
+        final decoded = jsonDecode(plan['featuresJson']);
+        if (decoded is List) {
+          featureList = decoded.map((e) => e.toString()).toList();
+        }
+      } catch (e) {
+        featureList = plan['featuresJson'].toString().split(',').map((e) => e.trim()).toList();
+      }
+    } else {
+      featureList = ['Truy cập API học viện SignMate', 'Hỗ trợ 24/7'];
+    }
+
+    final bool isB2b = plan['type'] == 'B2B';
+    final bool isPro = planName.toLowerCase().contains('pro') || planName.toLowerCase().contains('vip');
+
+    Color color = AppColors.planBasic;
+    if (isPro) color = AppColors.planPro;
+    if (isB2b) color = AppColors.primary;
+
     return CustomCard(
       margin: const EdgeInsets.only(bottom: 12),
       padding: EdgeInsets.zero,
-      border: isPopular ? Border.all(color: color, width: 2) : null,
+      border: Border.all(
+        color: isCurrentPlan ? AppColors.success : color, 
+        width: (isPro || isCurrentPlan || isB2b) ? 2 : 1.5
+      ),
       child: Column(
         children: [
-          if (isPopular)
+          if (isCurrentPlan)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 6),
+              decoration: const BoxDecoration(
+                color: AppColors.success,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(14)),
+              ),
+              child: const Text(
+                '✅ Đang sử dụng',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 13),
+              ),
+            )
+          else if (isPro)
             Container(
               width: double.infinity,
               padding: const EdgeInsets.symmetric(vertical: 6),
@@ -226,7 +212,7 @@ class PremiumScreen extends StatelessWidget {
                 Row(
                   children: [
                     Text(
-                      name,
+                      planName,
                       style: TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
@@ -234,7 +220,7 @@ class PremiumScreen extends StatelessWidget {
                     ),
                     const Spacer(),
                     Text(
-                      price,
+                      priceStr,
                       style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
@@ -243,7 +229,7 @@ class PremiumScreen extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 12),
-                ...features.map((f) => Padding(
+                ...featureList.map((f) => Padding(
                       padding: const EdgeInsets.only(bottom: 6),
                       child: Row(
                         children: [
@@ -255,12 +241,20 @@ class PremiumScreen extends StatelessWidget {
                         ],
                       ),
                     )),
-                if (planType != AppConstants.planFree) ...[
+                if (isB2b) ...[
                   const SizedBox(height: 12),
                   CustomButton(
-                    text: 'Chọn gói $name',
-                    backgroundColor: color,
-                    onPressed: () => context.go('/premium-payment'),
+                    text: 'Liên hệ tư vấn',
+                    icon: Icons.mail_outline,
+                    isOutlined: true,
+                    onPressed: () => context.go('/contact-form'),
+                  ),
+                ] else if (priceVnd != 0) ...[
+                  const SizedBox(height: 12),
+                  CustomButton(
+                    text: isCurrentPlan ? 'Đang sử dụng' : 'Chọn gói $planName',
+                    backgroundColor: isCurrentPlan ? AppColors.success : color,
+                    onPressed: isCurrentPlan ? null : () => context.go('/premium-payment'),
                   ),
                 ],
               ],

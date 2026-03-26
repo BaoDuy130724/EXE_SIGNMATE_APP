@@ -60,7 +60,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       );
       setState(() => _currentStep--);
     } else {
-      context.pop();
+      context.go('/login');
     }
   }
 

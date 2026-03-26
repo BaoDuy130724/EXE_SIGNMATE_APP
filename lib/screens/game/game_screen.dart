@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import '../../utils/app_colors.dart';
 import '../../widgets/common_widgets.dart';
+import '../../services/game_service.dart';
+import '../../providers/auth_provider.dart';
 
 class GameScreen extends StatefulWidget {
   const GameScreen({super.key});
@@ -15,6 +18,35 @@ class _GameScreenState extends State<GameScreen> {
   final int _total = 5;
   bool _answered = false;
   int _selectedAnswer = -1;
+  String? _sessionId;
+  bool _isSaving = false;
+  bool _isSaved = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _initSession();
+  }
+
+  Future<void> _initSession() async {
+    try {
+      _sessionId = await GameService().startGame('SignMatch');
+    } catch (_) {}
+  }
+
+  Future<void> _completeSession() async {
+    if (_sessionId == null || _isSaved) return;
+    setState(() => _isSaving = true);
+    try {
+      final res = await GameService().completeGame(_sessionId!, _score);
+      if (mounted) {
+        final xp = res['xpEarned'] ?? _score;
+        context.read<AuthProvider>().addXp(xp as int);
+      }
+    } catch (_) {} finally {
+      if (mounted) setState(() { _isSaving = false; _isSaved = true; });
+    }
+  }
 
   final List<Map<String, dynamic>> _questions = [
     {
@@ -56,7 +88,10 @@ class _GameScreenState extends State<GameScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (_currentQ >= _total) return _buildResult();
+    if (_currentQ >= _total) {
+      if (!_isSaved && !_isSaving) Future.microtask(_completeSession);
+      return _buildResult();
+    }
 
     final q = _questions[_currentQ];
     return Scaffold(

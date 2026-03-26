@@ -6,8 +6,25 @@ import '../../utils/app_colors.dart';
 import '../../widgets/common_widgets.dart';
 import '../../widgets/bottom_nav_bar.dart';
 
-class ProfileScreen extends StatelessWidget {
+import '../../services/dashboard_service.dart';
+import '../../models/progress_stats_model.dart';
+
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
+
+  @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  final DashboardService _dashboardService = DashboardService();
+  Future<ProgressStatsModel>? _progressFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _progressFuture = _dashboardService.getProgressStats();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -22,8 +39,14 @@ class ProfileScreen extends StatelessWidget {
           IconButton(icon: const Icon(Icons.settings_outlined), onPressed: () {}),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+      body: FutureBuilder<ProgressStatsModel>(
+        future: _progressFuture,
+        builder: (context, snapshot) {
+          final stats = snapshot.data;
+          final averageAccuracy = stats?.overallAccuracy.toInt() ?? auth.practiceAccuracy;
+
+          return SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
         child: Column(
           children: [
             // Profile header
@@ -75,38 +98,33 @@ class ProfileScreen extends StatelessWidget {
                   const SizedBox(height: 16),
                   Row(
                     children: [
-                      SizedBox(
-                        width: 70,
-                        height: 70,
-                        child: Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            CircularProgressIndicator(
-                              value: auth.practiceAccuracy / 100,
-                              strokeWidth: 8,
-                              backgroundColor: AppColors.divider,
-                              valueColor: AlwaysStoppedAnimation(
-                                auth.practiceAccuracy >= 70 ? AppColors.success : AppColors.warning,
-                              ),
-                            ),
-                            Text(
-                              '${auth.practiceAccuracy}%',
-                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 20),
                       Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            _accuracyRow('Bảng chữ cái', 0.9),
-                            const SizedBox(height: 6),
-                            _accuracyRow('Số đếm', 0.7),
-                            const SizedBox(height: 6),
-                            _accuracyRow('Chào hỏi', 0.6),
-                          ],
+                        child: Center(
+                          child: SizedBox(
+                            width: 100,
+                            height: 100,
+                            child: Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                SizedBox(
+                                  width: 100,
+                                  height: 100,
+                                  child: CircularProgressIndicator(
+                                    value: averageAccuracy / 100,
+                                    strokeWidth: 8,
+                                    backgroundColor: AppColors.divider,
+                                    valueColor: AlwaysStoppedAnimation(
+                                      averageAccuracy >= 70 ? AppColors.success : AppColors.warning,
+                                    ),
+                                  ),
+                                ),
+                                Text(
+                                  '$averageAccuracy%',
+                                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 22),
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
                       ),
                     ],
@@ -141,15 +159,16 @@ class ProfileScreen extends StatelessWidget {
                     const SizedBox(height: 16),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        _barDay('T2', 0.8),
-                        _barDay('T3', 0.6),
-                        _barDay('T4', 1.0),
-                        _barDay('T5', 0.4),
-                        _barDay('T6', 0.7),
-                        _barDay('T7', 0.3),
-                        _barDay('CN', 0.0),
-                      ],
+                      children: stats?.accuracyByTopic.isNotEmpty == true
+                        ? stats!.accuracyByTopic.entries.take(7).map((e) {
+                            String name = e.key.length > 3 ? e.key.substring(0, 3).toUpperCase() : e.key.toUpperCase();
+                            return _barDay(name, e.value / 100);
+                          }).toList()
+                        : [
+                            _barDay('C1', 0),
+                            _barDay('C2', 0),
+                            _barDay('C3', 0),
+                          ],
                     ),
                   ],
                 ),
@@ -163,11 +182,15 @@ class ProfileScreen extends StatelessWidget {
                   children: [
                     const Text('Chủ đề chưa tốt', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                     const SizedBox(height: 12),
-                    _weakTopic('Cảm xúc', 45, '😊'),
-                    const SizedBox(height: 8),
-                    _weakTopic('Gia đình', 55, '👨‍👩‍👧'),
-                    const SizedBox(height: 8),
-                    _weakTopic('Thức ăn', 60, '🍔'),
+                    ...((stats?.weakTopics ?? []).isEmpty
+                        ? [const Text('Chưa có dữ liệu. Hãy tham gia thêm bài học!', style: TextStyle(color: AppColors.textSecondary, fontSize: 13))]
+                        : stats!.weakTopics.take(3).map((topic) {
+                            final acc = stats.accuracyByTopic[topic] ?? 50;
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 8),
+                              child: _weakTopic(topic, acc, '📚'),
+                            );
+                          }).toList()),
                   ],
                 ),
               ),
@@ -235,37 +258,13 @@ class ProfileScreen extends StatelessWidget {
             const SizedBox(height: 80),
           ],
         ),
+      );
+        },
       ),
-      bottomNavigationBar: const AppBottomNavBar(currentIndex: 3),
+    bottomNavigationBar: const AppBottomNavBar(currentIndex: 3),
     );
   }
 
-  Widget _accuracyRow(String topic, double value) {
-    return Row(
-      children: [
-        Expanded(
-          flex: 2,
-          child: Text(topic, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary)),
-        ),
-        Expanded(
-          flex: 3,
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(3),
-            child: LinearProgressIndicator(
-              value: value,
-              minHeight: 6,
-              backgroundColor: AppColors.divider,
-              valueColor: AlwaysStoppedAnimation(
-                value >= 0.7 ? AppColors.success : (value >= 0.5 ? AppColors.warning : AppColors.error),
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(width: 8),
-        Text('${(value * 100).toInt()}%', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600)),
-      ],
-    );
-  }
 
   Widget _barDay(String day, double value) {
     return Column(

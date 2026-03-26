@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../utils/app_colors.dart';
 import '../../widgets/common_widgets.dart';
+import '../../services/center_service.dart';
 
 class ContactFormScreen extends StatefulWidget {
   const ContactFormScreen({super.key});
@@ -142,14 +143,34 @@ class _ContactFormScreenState extends State<ContactFormScreen> {
     );
   }
 
+  final _centerService = CenterService();
+
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _isSubmitting = true);
-    await Future.delayed(const Duration(seconds: 2));
-    setState(() {
-      _isSubmitting = false;
-      _isSubmitted = true;
-    });
+    
+    try {
+      await _centerService.submitB2BContact({
+        'centerName': _centerNameController.text.trim(),
+        'contactPerson': _contactPersonController.text.trim(),
+        'phone': _phoneController.text.trim(),
+        'email': _emailController.text.trim(),
+        'numberOfLearners': int.parse(_learnersController.text.trim()),
+      });
+      if (mounted) {
+        setState(() {
+          _isSubmitting = false;
+          _isSubmitted = true;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isSubmitting = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Có lỗi xảy ra, vui lòng thử lại sau!')),
+        );
+      }
+    }
   }
 
   Widget _buildSuccess() {

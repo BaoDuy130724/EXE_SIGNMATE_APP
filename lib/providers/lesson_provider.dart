@@ -1,6 +1,16 @@
 import 'package:flutter/material.dart';
+import '../services/course_service.dart';
+import '../models/course_model.dart';
 
 class LessonProvider extends ChangeNotifier {
+  final CourseService _courseService = CourseService();
+  
+  bool _isLoading = false;
+  bool get isLoading => _isLoading;
+
+  List<CourseModel> _courses = [];
+
+  // Gamification states
   int _currentLesson = 0;
   int _currentQuestion = 0;
   int _correctAnswers = 0;
@@ -14,16 +24,39 @@ class LessonProvider extends ChangeNotifier {
   List<String> get completedLessons => _completedLessons;
   double get progress => _totalQuestions > 0 ? _correctAnswers / _totalQuestions : 0;
 
-  final List<Map<String, dynamic>> lessons = [
-    {'id': '1', 'title': 'Bảng chữ cái', 'icon': '🔤', 'lessons': 26, 'completed': 10, 'level': 'Cơ bản', 'duration': 15, 'topic': 'Ngôn ngữ'},
-    {'id': '2', 'title': 'Số đếm', 'icon': '🔢', 'lessons': 20, 'completed': 5, 'level': 'Cơ bản', 'duration': 10, 'topic': 'Ngôn ngữ'},
-    {'id': '3', 'title': 'Chào hỏi', 'icon': '👋', 'lessons': 15, 'completed': 3, 'level': 'Cơ bản', 'duration': 10, 'topic': 'Giao tiếp'},
-    {'id': '4', 'title': 'Gia đình', 'icon': '👨‍👩‍👧', 'lessons': 12, 'completed': 0, 'level': 'Trung cấp', 'duration': 15, 'topic': 'Giao tiếp'},
-    {'id': '5', 'title': 'Màu sắc', 'icon': '🎨', 'lessons': 10, 'completed': 0, 'level': 'Cơ bản', 'duration': 8, 'topic': 'Từ vựng'},
-    {'id': '6', 'title': 'Động vật', 'icon': '🐾', 'lessons': 15, 'completed': 0, 'level': 'Trung cấp', 'duration': 12, 'topic': 'Từ vựng'},
-    {'id': '7', 'title': 'Thức ăn', 'icon': '🍔', 'lessons': 12, 'completed': 0, 'level': 'Trung cấp', 'duration': 10, 'topic': 'Từ vựng'},
-    {'id': '8', 'title': 'Cảm xúc', 'icon': '😊', 'lessons': 10, 'completed': 0, 'level': 'Nâng cao', 'duration': 15, 'topic': 'Giao tiếp'},
-  ];
+  /// Fetch courses from API
+  Future<void> loadCourses({String? search, String? level}) async {
+    _isLoading = true;
+    notifyListeners();
+    try {
+      _courses = await _courseService.getCourses(search: search, level: level);
+    } catch (e) {
+      debugPrint('Error loading courses: $e');
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  /// Maps the real API CourseModels into the Map<String, dynamic> format 
+  /// that the existing UI (lesson_screen.dart, home_screen.dart) expects.
+  List<Map<String, dynamic>> get lessons {
+    if (_courses.isEmpty) {
+      // Return empty list or maintain one hardcoded fallback if desired while loading
+      return [];
+    }
+    return _courses.map((course) => {
+      'id': course.id,
+      'title': course.title,
+      // API might return standard images, if empty use a fallback emoji
+      'icon': course.image.contains('assets') ? course.image : '📚',
+      'lessons': course.totalLessons,
+      'completed': 0, // Should be fetched from Progress API
+      'level': course.level,
+      'duration': 15, // Default fallback
+      'topic': course.topic,
+    }).toList();
+  }
 
   void startLesson(int index) {
     _currentLesson = index;

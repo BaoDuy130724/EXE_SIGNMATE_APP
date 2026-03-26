@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../utils/app_colors.dart';
 import '../../utils/app_constants.dart';
+import 'package:provider/provider.dart';
+import '../../providers/auth_provider.dart';
+import '../../providers/lesson_provider.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -55,8 +58,28 @@ class _SplashScreenState extends State<SplashScreen>
       _textController.forward();
     });
 
-    Future.delayed(const Duration(seconds: 3), () {
-      if (mounted) context.go('/login');
+    Future.delayed(const Duration(seconds: 2), () async {
+      if (!mounted) return;
+      
+      // Attempt to auto login via API
+      final auth = context.read<AuthProvider>();
+      await auth.autoLogin();
+      
+      if (!mounted) return;
+      
+      if (auth.isLoggedIn) {
+        // Pre-fetch real courses from API
+        context.read<LessonProvider>().loadCourses();
+        if (auth.userRole == 'center_admin') {
+          context.go('/center-home');
+        } else if (auth.userRole == 'teacher') {
+          context.go('/teacher-home');
+        } else {
+          context.go('/home');
+        }
+      } else {
+        context.go('/login');
+      }
     });
   }
 

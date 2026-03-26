@@ -35,7 +35,7 @@ class _RegisterStep2ScreenState extends State<RegisterStep2Screen> {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios, color: AppColors.textPrimary),
-          onPressed: () => context.pop(),
+          onPressed: () => context.go('/register'),
         ),
       ),
       body: SafeArea(
@@ -87,16 +87,22 @@ class _RegisterStep2ScreenState extends State<RegisterStep2Screen> {
                   text: 'Tiếp tục',
                   icon: Icons.arrow_forward_rounded,
                   onPressed: _canProceed
-                      ? () {
+                      ? () async {
                           if (_selectedGoal.isNotEmpty && _selectedLevel.isEmpty) {
                             // Show level selection
                             setState(() {});
                           } else {
-                            context.read<AuthProvider>().setOnboarding(
+                            final success = await context.read<AuthProvider>().submitOnboarding(
                               goal: _selectedGoal,
                               skillLevel: _selectedLevel,
                             );
-                            context.go('/quiz');
+                            if (success && context.mounted) {
+                              context.go('/quiz');
+                            } else if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Có lỗi xảy ra, vui lòng thử lại!')),
+                              );
+                            }
                           }
                         }
                       : null,
