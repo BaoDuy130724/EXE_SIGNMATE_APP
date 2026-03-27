@@ -28,14 +28,20 @@ class AuthService {
     return await getMe();
   }
 
+  /// Request a registration OTP email
+  Future<void> sendRegisterOtp(String email) async {
+    await _apiClient.post('/auth/send-register-otp', body: {'email': email}, requiresAuth: false);
+  }
+
   /// Registers and returns a UserModel if successful. Saves JWT token.
-  Future<UserModel> register(String name, String email, String password) async {
+  Future<UserModel> register(String name, String email, String password, String otpCode) async {
     final response = await _apiClient.post(
       '/auth/register',
       body: {
         'fullName': name, // Map Dart 'name' to C# 'FullName'
         'email': email,
         'password': password,
+        'otpCode': otpCode,
       },
       requiresAuth: false,
     );

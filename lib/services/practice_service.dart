@@ -1,4 +1,8 @@
+import 'dart:convert';
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'api_client.dart';
+import '../../utils/api_config.dart';
 
 class PracticeService {
   final ApiClient _apiClient = ApiClient();
@@ -40,5 +44,35 @@ class PracticeService {
       'durationSeconds': duration,
     });
     return response as Map<String, dynamic>;
+  }
+
+  /// Real-time analysis: send keypoints directly to Python AI service
+  Future<Map<String, dynamic>?> analyzeRealtime({
+    required String signName,
+    required List<List<Map<String, double>>> keypoints,
+    required String referenceKeypoints,
+  }) async {
+    try {
+      final payload = {
+        'sign_name': signName,
+        'user_keypoints_frames': keypoints,
+        'reference_keypoints': referenceKeypoints,
+      };
+
+      final response = await http.post(
+        Uri.parse('${ApiConfig.aiBaseUrl}/analyze/realtime-smart'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(payload),
+      ).timeout(ApiConfig.aiTimeoutDuration);
+
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        return jsonDecode(response.body) as Map<String, dynamic>;
+      }
+      debugPrint('AI realtime error: ${response.statusCode}');
+      return null;
+    } catch (e) {
+      debugPrint('AI realtime exception: $e');
+      return null;
+    }
   }
 }

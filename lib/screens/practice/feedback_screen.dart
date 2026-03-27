@@ -16,13 +16,12 @@ class _FeedbackScreenState extends State<FeedbackScreen>
   late AnimationController _controller;
   late Animation<double> _scale;
 
-  // Mock feedback data
-  final bool isCorrect = true;
-  final int accuracy = 85;
-  final String feedback = 'Tư thế tay tốt! Hãy giữ các ngón tay mở rộng hơn một chút.';
-  final String handShapeNote = 'Ngón cái hơi gập, cần duỗi thẳng hơn';
-  final String angleNote = 'Góc bàn tay hơi nghiêng, cần thẳng hơn';
-  final String suggestion = 'Thử giữ cổ tay thẳng và ngón tay mở rộng tự nhiên';
+  // Data from backend (passed via GoRouter extra)
+  bool isCorrect = true;
+  int accuracy = 0;
+  String feedback = '';
+  String? geminiFeedback;
+  List<Map<String, dynamic>> feedbacks = [];
 
   @override
   void initState() {
@@ -35,6 +34,31 @@ class _FeedbackScreenState extends State<FeedbackScreen>
       CurvedAnimation(parent: _controller, curve: Curves.elasticOut),
     );
     _controller.forward();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final extra = GoRouterState.of(context).extra;
+    if (extra is Map<String, dynamic>) {
+      final score = (extra['overallScore'] ?? 0.0);
+      accuracy = ((score is double ? score : (score as num).toDouble()) * 100).round();
+      isCorrect = accuracy >= 70;
+      geminiFeedback = extra['geminiFeedback'] as String?;
+
+      final rawFeedbacks = extra['feedbacks'];
+      if (rawFeedbacks is List) {
+        feedbacks = rawFeedbacks.cast<Map<String, dynamic>>();
+        // Build basic feedback from DTW scores
+        final weakest = feedbacks.isNotEmpty
+            ? (feedbacks.reduce((a, b) =>
+                (a['score'] as num) < (b['score'] as num) ? a : b))
+            : null;
+        if (weakest != null) {
+          feedback = weakest['message'] ?? '';
+        }
+      }
+    }
   }
 
   @override
@@ -124,7 +148,7 @@ class _FeedbackScreenState extends State<FeedbackScreen>
                   ),
                   const SizedBox(height: 12),
                   // Basic/Pro: show feedback text
-                  if (plan != 'free')
+                  if (plan != 'free' && feedback.isNotEmpty)
                     Text(
                       feedback,
                       style: const TextStyle(fontSize: 14, height: 1.4),
@@ -134,10 +158,98 @@ class _FeedbackScreenState extends State<FeedbackScreen>
               ),
             ),
 
+            // DTW score breakdown (Basic + Pro)
+            if (plan != 'free' && feedbacks.isNotEmpty)
+              CustomCard(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Row(
+                      children: [
+                        Icon(Icons.analytics_outlined, color: AppColors.primary, size: 20),
+                        SizedBox(width: 8),
+                        Text(
+                          'Điểm chi tiết',
+                          style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    ...feedbacks.map((fb) {
+                      final score = ((fb['score'] as num?) ?? 0).toDouble();
+                      final type = fb['type'] ?? '';
+                      final label = _getTypeLabel(type);
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: Row(
+                          children: [
+                            SizedBox(
+                              width: 120,
+                              child: Text(label, style: const TextStyle(fontSize: 13)),
+                            ),
+                            Expanded(
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(4),
+                                child: LinearProgressIndicator(
+                                  value: score,
+                                  backgroundColor: AppColors.divider,
+                                  valueColor: AlwaysStoppedAnimation(
+                                    score >= 0.7 ? AppColors.success :
+                                    score >= 0.5 ? AppColors.warning : AppColors.error,
+                                  ),
+                                  minHeight: 8,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              '${(score * 100).round()}%',
+                              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+                            ),
+                          ],
+                        ),
+                      );
+                    }),
+                  ],
+                ),
+              ),
+
             // UC-06 + UC-21: Plan-based detail gating
             if (!isCorrect) ...[
-              // Pro only: Detailed error breakdown
-              if (plan == 'pro') ...[
+              // Pro only: Gemini AI detailed feedback
+              if (plan == 'pro' && geminiFeedback != null && geminiFeedback!.isNotEmpty)
+                CustomCard(
+                  color: const Color(0xFFF0F7FF),
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Row(
+                        children: [
+                          Icon(Icons.auto_awesome, color: AppColors.primary, size: 20),
+                          SizedBox(width: 8),
+                          Text(
+                            'Phản hồi AI Coach',
+                            style: TextStyle(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 16,
+                              color: AppColors.primary,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        geminiFeedback!,
+                        style: const TextStyle(fontSize: 14, height: 1.6),
+                      ),
+                    ],
+                  ),
+                ),
+
+              // Pro without Gemini feedback: show DTW-based errors
+              if (plan == 'pro' && (geminiFeedback == null || geminiFeedback!.isEmpty))
                 CustomCard(
                   padding: const EdgeInsets.all(16),
                   child: Column(
@@ -154,39 +266,18 @@ class _FeedbackScreenState extends State<FeedbackScreen>
                         ],
                       ),
                       const SizedBox(height: 12),
-                      _errorItem('✋ Tư thế tay', handShapeNote),
-                      const SizedBox(height: 10),
-                      _errorItem('📐 Góc bàn tay', angleNote),
+                      ...feedbacks
+                          .where((fb) => ((fb['score'] as num?) ?? 1).toDouble() < 0.7)
+                          .map((fb) => Padding(
+                                padding: const EdgeInsets.only(bottom: 10),
+                                child: _errorItem(
+                                  _getTypeIcon(fb['type'] ?? ''),
+                                  fb['message'] ?? '',
+                                ),
+                              )),
                     ],
                   ),
                 ),
-                CustomCard(
-                  color: AppColors.infoLight,
-                  padding: const EdgeInsets.all(16),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.tips_and_updates, color: AppColors.info),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Gợi ý',
-                              style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.info),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              suggestion,
-                              style: const TextStyle(color: AppColors.info, fontSize: 13),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
 
               // Free/Basic: show upgrade prompt for detailed feedback
               if (plan != 'pro')
@@ -203,7 +294,7 @@ class _FeedbackScreenState extends State<FeedbackScreen>
                             child: Text(
                               plan == 'free'
                                   ? 'Nâng cấp để xem phản hồi chi tiết'
-                                  : 'Nâng cấp Pro để xem lỗi chi tiết (hand shape, angle)',
+                                  : 'Nâng cấp Pro để nhận phản hồi AI Coach cá nhân hóa',
                               style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 13),
                             ),
                           ),
@@ -273,6 +364,26 @@ class _FeedbackScreenState extends State<FeedbackScreen>
         ),
       ),
     );
+  }
+
+  String _getTypeLabel(String type) {
+    switch (type.toLowerCase()) {
+      case 'handshape': return '✋ Hình dạng tay';
+      case 'movement': return '👋 Chuyển động';
+      case 'location': return '📍 Vị trí';
+      case 'palmorientation': return '🤚 Hướng lòng bàn tay';
+      default: return type;
+    }
+  }
+
+  String _getTypeIcon(String type) {
+    switch (type.toLowerCase()) {
+      case 'handshape': return '✋ Tư thế tay';
+      case 'movement': return '👋 Chuyển động';
+      case 'location': return '📍 Vị trí tay';
+      case 'palmorientation': return '🤚 Hướng bàn tay';
+      default: return type;
+    }
   }
 
   Widget _errorItem(String title, String desc) {

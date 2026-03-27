@@ -217,25 +217,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
     
     try {
        final auth = context.read<AuthProvider>();
-       final success = await auth.register(
-         _nameController.text,
-         _emailController.text,
-         _passwordController.text,
-       );
+       // First, trigger sending the OTP to the email
+       await auth.sendRegisterOtp(_emailController.text);
        
        if (!mounted) return;
        
-       if (success) {
-         // Proceed to onboarding flow
-         context.go('/register-step2');
-       } else {
-         ScaffoldMessenger.of(context).showSnackBar(
-           const SnackBar(content: Text('Đăng ký thất bại. Email có thể đã tồn tại.')),
-         );
-       }
+       // Then navigate to the OTP screen to complete registration
+       context.push('/register-otp', extra: {
+         'name': _nameController.text,
+         'email': _emailController.text,
+         'password': _passwordController.text,
+       });
+
     } catch (e) {
        ScaffoldMessenger.of(context).showSnackBar(
-         const SnackBar(content: Text('Có lỗi xảy ra khi kết nối máy chủ.')),
+         const SnackBar(content: Text('Có lỗi xảy ra khi kết nối máy chủ. Email có thể đã tồn tại.')),
        );
     } finally {
        if (mounted) setState(() => _isLoading = false);

@@ -114,7 +114,8 @@ class _LessonScreenState extends State<LessonScreen> {
                     itemBuilder: (context, index) {
                       final lesson = filtered[index];
                       final originalIndex = lp.lessons.indexOf(lesson);
-                      final progress = lesson['completed'] / lesson['lessons'];
+                      final total = (lesson['lessons'] ?? 0) as int;
+                      final progress = total > 0 ? (lesson['completed'] ?? 0) / total : 0.0;
 
                       return CustomCard(
                         onTap: () {

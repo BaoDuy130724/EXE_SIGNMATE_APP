@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+import '../../providers/auth_provider.dart';
 import '../../utils/app_colors.dart';
 import '../../widgets/common_widgets.dart';
 
@@ -139,7 +141,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           CustomButton(
             text: _currentStep == 2 ? 'Lưu mật khẩu mới' : 'Tiếp tục',
             icon: _currentStep == 2 ? Icons.check_circle_outline : Icons.arrow_forward_rounded,
-            onPressed: () {
+            onPressed: () async {
               // Basic validation
               if (_currentStep == 0 && !_emailController.text.contains('@')) {
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -147,16 +149,16 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 );
                 return;
               }
-              if (_currentStep == 1 && _otpController.text.length < 4) {
+              if (_currentStep == 1 && _otpController.text.length < 6) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Vui lòng nhập mã xác nhận')),
+                  const SnackBar(content: Text('Vui lòng nhập đủ 6 số xác nhận')),
                 );
                 return;
               }
               if (_currentStep == 2) {
                 if (_passwordController.text.length < 6) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Mật khẩu quá ngắn')),
+                    const SnackBar(content: Text('Mật khẩu tối thiểu 6 ký tự')),
                   );
                   return;
                 }
@@ -167,7 +169,31 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   return;
                 }
               }
-              _nextStep();
+
+              // Processing API calls
+              try {
+                if (_currentStep == 0) {
+                  // Request OTP
+                  await context.read<AuthProvider>().forgotPassword(_emailController.text);
+                  _nextStep();
+                } else if (_currentStep == 1) {
+                  // Just UI step, validation happens in reset password
+                  _nextStep();
+                } else if (_currentStep == 2) {
+                  // Reset Password
+                  await context.read<AuthProvider>().resetPassword(
+                    _emailController.text,
+                    _otpController.text,
+                    _passwordController.text,
+                  );
+                  _nextStep();
+                }
+              } catch (e) {
+                if (!context.mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Lỗi xử lý yêu cầu. Vui lòng thử lại.')),
+                );
+              }
             },
           ),
         ],

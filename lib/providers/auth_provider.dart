@@ -57,9 +57,19 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  Future<bool> register(String name, String email, String password) async {
+  Future<bool> sendRegisterOtp(String email) async {
     try {
-      final user = await _authService.register(name, email, password);
+      await _authService.sendRegisterOtp(email);
+      return true;
+    } catch (e) {
+      debugPrint('Send OTP Error: $e');
+      rethrow;
+    }
+  }
+
+  Future<bool> register(String name, String email, String password, String otpCode) async {
+    try {
+      final user = await _authService.register(name, email, password, otpCode);
       _isLoggedIn = true;
       _populateFromModel(user);
       return true;
@@ -67,6 +77,14 @@ class AuthProvider extends ChangeNotifier {
       debugPrint('Register Error: $e');
       return false;
     }
+  }
+
+  Future<void> forgotPassword(String email) async {
+    await _authService.forgotPassword(email);
+  }
+
+  Future<void> resetPassword(String email, String code, String newPassword) async {
+    await _authService.resetPassword(email, code, newPassword);
   }
 
   void _populateFromModel(dynamic user) {

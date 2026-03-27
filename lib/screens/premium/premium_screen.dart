@@ -254,7 +254,28 @@ class PremiumScreen extends StatelessWidget {
                   CustomButton(
                     text: isCurrentPlan ? 'Đang sử dụng' : 'Chọn gói $planName',
                     backgroundColor: isCurrentPlan ? AppColors.success : color,
-                    onPressed: isCurrentPlan ? null : () => context.go('/premium-payment'),
+                    onPressed: isCurrentPlan ? null : () async {
+                      final planId = plan['id']?.toString() ?? '';
+                      try {
+                        final result = await SubscriptionService().subscribe(planId);
+                        final paymentUrl = result['paymentUrl'] as String?;
+                        if (paymentUrl != null && context.mounted) {
+                          context.go('/premium-payment', extra: {'paymentUrl': paymentUrl});
+                        } else if (result['success'] == true && context.mounted) {
+                          // Free plan activated
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('✅ Gói đã được kích hoạt!'), backgroundColor: AppColors.success),
+                          );
+                          context.go('/home');
+                        }
+                      } catch (e) {
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Lỗi: $e'), backgroundColor: AppColors.error),
+                          );
+                        }
+                      }
+                    },
                   ),
                 ],
               ],
