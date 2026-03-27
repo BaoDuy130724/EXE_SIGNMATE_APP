@@ -3,7 +3,6 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../providers/lesson_provider.dart';
 import '../../utils/app_colors.dart';
-import '../../widgets/common_widgets.dart';
 
 class CompleteScreen extends StatefulWidget {
   const CompleteScreen({super.key});
@@ -20,16 +19,9 @@ class _CompleteScreenState extends State<CompleteScreen>
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 800),
-    );
-    _scale = Tween<double>(begin: 0.5, end: 1.0).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.elasticOut),
-    );
-    _fade = Tween<double>(begin: 0, end: 1).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeIn),
-    );
+    _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 800));
+    _scale = Tween<double>(begin: 0.5, end: 1.0).animate(CurvedAnimation(parent: _controller, curve: Curves.elasticOut));
+    _fade = Tween<double>(begin: 0, end: 1).animate(CurvedAnimation(parent: _controller, curve: Curves.easeIn));
     _controller.forward();
   }
 
@@ -42,85 +34,58 @@ class _CompleteScreenState extends State<CompleteScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.backgroundLight,
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
+      body: Container(
+        width: double.infinity,
+        height: double.infinity,
+        decoration: const BoxDecoration(gradient: AppColors.primaryGradient),
+        child: SafeArea(
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Spacer(),
+              const Spacer(flex: 2),
               ScaleTransition(
                 scale: _scale,
                 child: FadeTransition(
                   opacity: _fade,
                   child: Column(
                     children: [
-                      // Confetti-like circles
-                      Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          Container(
-                            width: 140,
-                            height: 140,
-                            decoration: BoxDecoration(
-                              color: AppColors.success.withValues(alpha: 0.08),
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                          Container(
-                            width: 110,
-                            height: 110,
-                            decoration: BoxDecoration(
-                              color: AppColors.success.withValues(alpha: 0.15),
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                          const Icon(
-                            Icons.check_circle_rounded,
-                            color: AppColors.success,
-                            size: 70,
-                          ),
-                        ],
+                      // Check icon
+                      Container(
+                        width: 100,
+                        height: 100,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.2),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.check_circle_rounded, color: Colors.white, size: 60),
                       ),
-                      const SizedBox(height: 32),
+                      const SizedBox(height: 28),
                       const Text(
                         'Tuyệt vời! 🎉',
-                        style: TextStyle(
-                          fontSize: 32,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.textPrimary,
-                        ),
+                        style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.white),
                       ),
                       const SizedBox(height: 12),
-                      const Text(
+                      Text(
                         'Chương trình học đã được\ncá nhân hóa cho bạn',
-                        style: TextStyle(
-                          color: AppColors.textSecondary,
-                          fontSize: 16,
-                          height: 1.5,
-                        ),
+                        style: TextStyle(color: Colors.white.withValues(alpha: 0.85), fontSize: 16, height: 1.5),
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 32),
-                      // Quick stats
-                      CustomCard(
+                      // Stats row
+                      Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 32),
                         padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+                        ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
                             _stat('📚', '8', 'Chủ đề'),
-                            Container(
-                              width: 1,
-                              height: 40,
-                              color: AppColors.divider,
-                            ),
+                            Container(width: 1, height: 36, color: Colors.white.withValues(alpha: 0.3)),
                             _stat('🎯', '100+', 'Bài học'),
-                            Container(
-                              width: 1,
-                              height: 40,
-                              color: AppColors.divider,
-                            ),
+                            Container(width: 1, height: 36, color: Colors.white.withValues(alpha: 0.3)),
                             _stat('🤖', 'AI', 'Hỗ trợ'),
                           ],
                         ),
@@ -129,16 +94,29 @@ class _CompleteScreenState extends State<CompleteScreen>
                   ),
                 ),
               ),
-              const Spacer(),
-              CustomButton(
-                text: 'Bắt đầu học ngay!',
-                icon: Icons.rocket_launch_rounded,
-                onPressed: () {
-                   context.read<LessonProvider>().loadCourses();
-                   context.go('/home');
-                },
+              const Spacer(flex: 2),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 32),
+                child: SizedBox(
+                  width: double.infinity,
+                  height: 52,
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      context.read<LessonProvider>().loadCourses();
+                      context.go('/home');
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      foregroundColor: AppColors.primary,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(26)),
+                      elevation: 0,
+                    ),
+                    icon: const Icon(Icons.rocket_launch_rounded),
+                    label: const Text('Bắt đầu học ngay!', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                  ),
+                ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 48),
             ],
           ),
         ),
@@ -149,23 +127,10 @@ class _CompleteScreenState extends State<CompleteScreen>
   Widget _stat(String emoji, String value, String label) {
     return Column(
       children: [
-        Text(emoji, style: const TextStyle(fontSize: 24)),
+        Text(emoji, style: const TextStyle(fontSize: 22)),
         const SizedBox(height: 4),
-        Text(
-          value,
-          style: const TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: AppColors.textPrimary,
-          ),
-        ),
-        Text(
-          label,
-          style: const TextStyle(
-            color: AppColors.textSecondary,
-            fontSize: 12,
-          ),
-        ),
+        Text(value, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+        Text(label, style: TextStyle(fontSize: 12, color: Colors.white.withValues(alpha: 0.8))),
       ],
     );
   }

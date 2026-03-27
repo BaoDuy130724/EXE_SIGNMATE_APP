@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 
 class AppColors {
   // Primary
-  static const Color primary = Color(0xFF9B69FE);
-  static const Color primaryDark = Color(0xFF8A38F5);
+  static const Color primary = Color(0xFF5C27FE);
+  static const Color primaryDark = Color(0xFF4A1FD6);
   static const Color primaryLight = Color(0xFFEDE8FF);
-  static const Color secondary = Color(0xFFA785FF);
+  static const Color secondary = Color(0xFFC084FC);
+  static const Color accentOrange = Color(0xFFFF9800);
+  static const Color cardBorder = Color(0xFFD4C4F7);
 
   // Backgrounds
   static const Color background = Color(0xFFF5F5F5);
@@ -41,9 +43,9 @@ class AppColors {
 
   // Gradients
   static const LinearGradient primaryGradient = LinearGradient(
-    colors: [Color(0xFF9B69FE), Color(0xFF8A38F5)],
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
+    colors: [Color(0xFF5C27FE), Color(0xFFC084FC)],
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
   );
 
   static const LinearGradient premiumGradient = LinearGradient(

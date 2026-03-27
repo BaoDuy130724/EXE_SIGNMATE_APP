@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/lesson_provider.dart';
 import '../../utils/app_colors.dart';
-import '../../widgets/common_widgets.dart';
 import '../../widgets/bottom_nav_bar.dart';
 
 import '../../services/dashboard_service.dart';
@@ -38,202 +37,162 @@ class _HomeScreenState extends State<HomeScreen> {
         future: _summaryFuture,
         builder: (context, snapshot) {
           final summary = snapshot.data;
-          
+
           return CustomScrollView(
             slivers: [
-          // App Bar
-          SliverAppBar(
-            expandedHeight: 140,
-            floating: false,
-            pinned: true,
-            backgroundColor: AppColors.primary,
-            automaticallyImplyLeading: false,
-            flexibleSpace: FlexibleSpaceBar(
-              background: Container(
-                decoration: const BoxDecoration(gradient: AppColors.primaryGradient),
-                child: SafeArea(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            CircleAvatar(
-                              radius: 22,
-                              backgroundColor: Colors.white24,
-                              child: Text(
-                                auth.userName.isNotEmpty ? auth.userName[0].toUpperCase() : 'U',
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
+              // ── Gradient Header ──
+              SliverToBoxAdapter(
+                child: Container(
+                  decoration: const BoxDecoration(
+                    gradient: AppColors.primaryGradient,
+                    borderRadius: BorderRadius.only(
+                      bottomLeft: Radius.circular(28),
+                      bottomRight: Radius.circular(28),
+                    ),
+                  ),
+                  child: SafeArea(
+                    bottom: false,
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+                      child: Column(
+                        children: [
+                          // ── Profile Row ──
+                          Row(
+                            children: [
+                              // Avatar
+                              Container(
+                                width: 48,
+                                height: 48,
+                                decoration: BoxDecoration(
+                                  color: AppColors.secondary.withValues(alpha: 0.5),
+                                  shape: BoxShape.circle,
                                 ),
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Xin chào, ${auth.userName.isEmpty ? "Bạn" : auth.userName}! 👋',
+                                child: Center(
+                                  child: Text(
+                                    auth.userName.isNotEmpty ? auth.userName[0].toUpperCase() : 'S',
                                     style: const TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w600,
+                                      fontSize: 20,
                                       color: Colors.white,
+                                      fontWeight: FontWeight.bold,
                                     ),
                                   ),
-                                  const SizedBox(height: 2),
-                                  Row(
-                                    children: [
-                                      StreakWidget(streak: summary?.currentStreak ?? auth.streak, compact: true),
-                                      const SizedBox(width: 8),
-                                      PlanBadge(plan: auth.plan),
-                                    ],
-                                  ),
-                                ],
+                                ),
                               ),
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.notifications_outlined, color: Colors.white),
-                              onPressed: () {},
-                            ),
-                          ],
-                        ),
-                      ],
+                              const SizedBox(width: 14),
+                              // Greeting
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Xin chào',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: Colors.white.withValues(alpha: 0.85),
+                                      ),
+                                    ),
+                                    Text(
+                                      auth.userName.isEmpty ? 'Bạn' : auth.userName,
+                                      style: const TextStyle(
+                                        fontSize: 22,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              // Hamburger menu
+                              IconButton(
+                                icon: const Icon(Icons.menu, color: Colors.white, size: 28),
+                                onPressed: () {},
+                              ),
+                            ],
+                          ),
+
+                          const SizedBox(height: 20),
+
+                          // ── Stat Cards Row ──
+                          Row(
+                            children: [
+                              Expanded(
+                                child: _statCard(
+                                  icon: Icons.gps_fixed,
+                                  label: 'Độ chính xác',
+                                  value: '${summary?.averageAccuracy.toInt() ?? auth.practiceAccuracy}%',
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: _statCard(
+                                  icon: Icons.local_fire_department_rounded,
+                                  label: 'Giữ chuỗi',
+                                  value: '${summary?.currentStreak ?? auth.streak} ngày',
+                                  iconColor: AppColors.accentOrange,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-          ),
 
-          // Content
-          SliverPadding(
-            padding: const EdgeInsets.all(16),
-            sliver: SliverList(
-              delegate: SliverChildListDelegate([
-                // Stats Row
-                Row(
-                  children: [
-                    Expanded(
-                      child: CustomCard(
-                        onTap: () => context.go('/profile'),
-                        padding: const EdgeInsets.all(16),
-                        child: Column(
-                          children: [
-                            const Text('🎯', style: TextStyle(fontSize: 28)),
-                            const SizedBox(height: 6),
-                            Text(
-                              '${summary?.averageAccuracy.toInt() ?? auth.practiceAccuracy}%',
-                              style: const TextStyle(
-                                fontSize: 22,
-                                fontWeight: FontWeight.bold,
-                                color: AppColors.primary,
-                              ),
-                            ),
-                            const Text(
-                              'Chính xác',
-                              style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
-                            ),
-                          ],
+              // ── Content Section ──
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+                sliver: SliverList(
+                  delegate: SliverChildListDelegate([
+                    // ── Continue Lesson Card ──
+                    if (lessons.lessons.isNotEmpty)
+                      _continueCard(context, lessons),
+
+                    const SizedBox(height: 20),
+
+                    // ── Section Title ──
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Bài học gợi ý',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.textPrimary,
+                          ),
                         ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: CustomCard(
-                        onTap: () => context.go('/profile'),
-                        padding: const EdgeInsets.all(16),
-                        child: Column(
-                          children: [
-                            const Text('⭐', style: TextStyle(fontSize: 28)),
-                            const SizedBox(height: 6),
-                            Text(
-                              '${auth.totalXp}',
-                              style: const TextStyle(
-                                fontSize: 22,
-                                fontWeight: FontWeight.bold,
-                                color: AppColors.xpGold,
+                        GestureDetector(
+                          onTap: () => context.go('/lesson'),
+                          child: Row(
+                            children: [
+                              Text(
+                                'xem thêm',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: AppColors.accentOrange,
+                                  fontWeight: FontWeight.w500,
+                                ),
                               ),
-                            ),
-                            const Text(
-                              'Tổng XP',
-                              style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
-                            ),
-                          ],
+                              const SizedBox(width: 4),
+                              Icon(Icons.chevron_right, size: 18, color: AppColors.accentOrange),
+                            ],
+                          ),
                         ),
-                      ),
+                      ],
                     ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: CustomCard(
-                        onTap: () => context.go('/profile'),
-                        padding: const EdgeInsets.all(16),
-                        child: Column(
-                          children: [
-                            const Text('📚', style: TextStyle(fontSize: 28)),
-                            const SizedBox(height: 6),
-                            Text(
-                              '${auth.lessonsCompleted}',
-                              style: const TextStyle(
-                                fontSize: 22,
-                                fontWeight: FontWeight.bold,
-                                color: AppColors.success,
-                              ),
-                            ),
-                            const Text(
-                              'Bài học',
-                              style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
-                            ),
-                          ],
-                        ),
-                      ),
+                    const SizedBox(height: 12),
+
+                    // ── Lesson Cards ──
+                    ...lessons.lessons.asMap().entries.take(4).map(
+                      (e) => _lessonCard(context, e.value, e.key, lessons),
                     ),
-                  ],
+
+                    const SizedBox(height: 100),
+                  ]),
                 ),
-
-                const SizedBox(height: 8),
-
-                // Quick Actions
-                Row(
-                  children: [
-                    _quickAction(context, '📹', 'Camera AI', '/practice-camera', AppColors.primaryLight),
-                    const SizedBox(width: 10),
-                    _quickAction(context, '📝', 'Kiểm tra', '/practice', AppColors.successLight),
-                    const SizedBox(width: 10),
-                    _quickAction(context, '🏆', 'Nâng cấp', '/premium', AppColors.warningLight),
-                  ],
-                ),
-
-                const SizedBox(height: 20),
-
-                // Continue Learning Section
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      'Tiếp tục học',
-                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                    ),
-                    TextButton(
-                      onPressed: () => context.go('/lesson'),
-                      child: const Text('Xem tất cả', style: TextStyle(color: AppColors.primary)),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-
-                // Lesson cards
-                ...lessons.lessons.asMap().entries.take(4).map(
-                  (e) => _lessonCard(context, e.value, e.key, lessons),
-                ),
-
-                const SizedBox(height: 100), // Space for bottom nav
-              ]),
-            ),
-          ),
+              ),
             ],
           );
         },
@@ -242,84 +201,195 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _quickAction(BuildContext context, String emoji, String label, String route, Color bgColor) {
-    return Expanded(
-      child: GestureDetector(
-        onTap: () => context.go(route),
-        child: CustomCard(
-          margin: EdgeInsets.zero,
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          color: bgColor,
-          child: Column(
-            children: [
-              Text(emoji, style: const TextStyle(fontSize: 28)),
-              const SizedBox(height: 6),
-              Text(
-                label,
-                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
-        ),
+  // ── Stat Card (inside gradient) ──
+  Widget _statCard({
+    required IconData icon,
+    required String label,
+    required String value,
+    Color? iconColor,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.2),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
       ),
-    );
-  }
-
-  Widget _lessonCard(BuildContext context, Map<String, dynamic> lesson, int index, LessonProvider lp) {
-    final progress = lesson['completed'] / lesson['lessons'];
-    return CustomCard(
-      onTap: () {
-        lp.startLesson(index);
-        context.go('/lesson');
-      },
-      padding: const EdgeInsets.all(16),
       child: Row(
         children: [
-          Container(
-            width: 50,
-            height: 50,
-            decoration: BoxDecoration(
-              color: AppColors.primaryLight,
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: Center(child: Text(lesson['icon'], style: const TextStyle(fontSize: 26))),
-          ),
-          const SizedBox(width: 14),
+          Icon(icon, color: iconColor ?? Colors.white, size: 24),
+          const SizedBox(width: 10),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  lesson['title'],
-                  style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+                  label,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.white.withValues(alpha: 0.85),
+                  ),
                 ),
-                const SizedBox(height: 4),
                 Text(
-                  '${lesson['completed']}/${lesson['lessons']} bài',
-                  style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
-                ),
-                const SizedBox(height: 8),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(4),
-                  child: LinearProgressIndicator(
-                    value: progress,
-                    minHeight: 5,
-                    backgroundColor: AppColors.divider,
-                    valueColor: AlwaysStoppedAnimation(
-                      progress >= 1.0 ? AppColors.success : AppColors.primary,
-                    ),
+                  value,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(width: 8),
-          Icon(
-            progress >= 1.0 ? Icons.check_circle : Icons.chevron_right,
-            color: progress >= 1.0 ? AppColors.success : AppColors.textLight,
-          ),
         ],
+      ),
+    );
+  }
+
+  // ── Continue Lesson Card ──
+  Widget _continueCard(BuildContext context, LessonProvider lp) {
+    final lesson = lp.lessons.first;
+    return GestureDetector(
+      onTap: () {
+        lp.startLesson(0);
+        context.go('/lesson');
+      },
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppColors.accentOrange.withValues(alpha: 0.5), width: 1.5),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.accentOrange.withValues(alpha: 0.08),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            // Orange play icon
+            Container(
+              width: 52,
+              height: 52,
+              decoration: BoxDecoration(
+                color: AppColors.accentOrange.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: const Icon(Icons.play_arrow_rounded, color: AppColors.accentOrange, size: 30),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Tiếp tục bài học',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.accentOrange,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '${lesson['title']} - Bài ${lesson['completed'] + 1}',
+                    style: const TextStyle(
+                      fontSize: 13,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(4),
+                    child: LinearProgressIndicator(
+                      value: lesson['completed'] / lesson['lessons'],
+                      minHeight: 5,
+                      backgroundColor: AppColors.divider,
+                      valueColor: const AlwaysStoppedAnimation(AppColors.accentOrange),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            const Icon(Icons.chevron_right, color: AppColors.accentOrange),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ── Lesson Card ──
+  Widget _lessonCard(BuildContext context, Map<String, dynamic> lesson, int index, LessonProvider lp) {
+    return GestureDetector(
+      onTap: () {
+        lp.startLesson(index);
+        context.go('/lesson');
+      },
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppColors.cardBorder),
+        ),
+        child: Row(
+          children: [
+            // Purple play icon
+            Container(
+              width: 52,
+              height: 52,
+              decoration: BoxDecoration(
+                color: AppColors.primaryLight,
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: const Icon(Icons.play_arrow_rounded, color: AppColors.primary, size: 28),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    lesson['title'],
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.primary,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      Text(
+                        'Cơ bản',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Icon(Icons.access_time, size: 14, color: AppColors.textSecondary),
+                      const SizedBox(width: 4),
+                      Text(
+                        '${lesson['lessons'] * 10} phút',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const Icon(Icons.chevron_right, color: AppColors.primary),
+          ],
+        ),
       ),
     );
   }

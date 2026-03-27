@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import '../../providers/auth_provider.dart';
 import '../../providers/lesson_provider.dart';
 import '../../utils/app_colors.dart';
-import '../../widgets/common_widgets.dart';
 import '../../widgets/bottom_nav_bar.dart';
 
 class LessonScreen extends StatefulWidget {
@@ -13,253 +13,240 @@ class LessonScreen extends StatefulWidget {
 }
 
 class _LessonScreenState extends State<LessonScreen> {
-  String _selectedTopic = 'Tất cả';
-  String _selectedLevel = 'Tất cả';
-  String _selectedDuration = 'Tất cả';
+  // Color map per lesson category
+  static const Map<String, Color> _categoryColors = {
+    'Cơ bản': Color(0xFF34A853),      // Green
+    'Gia đình': Color(0xFFFF9800),    // Orange  
+    'Ăn uống': Color(0xFF7C3AED),     // Purple
+    'Giao tiếp': Color(0xFF3B82F6),   // Blue
+    'Số đếm': Color(0xFF34A853),      // Green
+  };
 
-  final topics = ['Tất cả', 'Ngôn ngữ', 'Giao tiếp', 'Từ vựng'];
-  final levels = ['Tất cả', 'Cơ bản', 'Trung cấp', 'Nâng cao'];
-  final durations = ['Tất cả', '≤10 phút', '11-15 phút'];
-
-  List<Map<String, dynamic>> _filterLessons(List<Map<String, dynamic>> all) {
-    return all.where((l) {
-      if (_selectedTopic != 'Tất cả' && l['topic'] != _selectedTopic) return false;
-      if (_selectedLevel != 'Tất cả' && l['level'] != _selectedLevel) return false;
-      if (_selectedDuration != 'Tất cả') {
-        final d = l['duration'] as int;
-        if (_selectedDuration == '≤10 phút' && d > 10) return false;
-        if (_selectedDuration == '11-15 phút' && (d <= 10 || d > 15)) return false;
+  Color _getColor(Map<String, dynamic> lesson) {
+    final title = lesson['title'] as String? ?? '';
+    final topic = lesson['topic'] as String? ?? '';
+    // Try to match by title first, then by topic
+    for (final key in _categoryColors.keys) {
+      if (title.toLowerCase().contains(key.toLowerCase()) || 
+          topic.toLowerCase().contains(key.toLowerCase())) {
+        return _categoryColors[key]!;
       }
-      return true;
-    }).toList();
+    }
+    return _categoryColors['Cơ bản']!; // Default green
   }
 
   @override
   Widget build(BuildContext context) {
+    final auth = context.watch<AuthProvider>();
     final lp = context.watch<LessonProvider>();
-    final filtered = _filterLessons(lp.lessons);
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: const Text('Thư viện bài học'),
-        automaticallyImplyLeading: false,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.search),
-            onPressed: () {},
-          ),
-        ],
-      ),
-      body: Column(
-        children: [
-          // Filters
-          Container(
-            color: Colors.white,
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Topic filter
-                _filterRow('Chủ đề', topics, _selectedTopic, (v) => setState(() => _selectedTopic = v)),
-                const SizedBox(height: 8),
-                // Level filter
-                _filterRow('Cấp độ', levels, _selectedLevel, (v) => setState(() => _selectedLevel = v)),
-                const SizedBox(height: 8),
-                // Duration filter
-                _filterRow('Thời lượng', durations, _selectedDuration, (v) => setState(() => _selectedDuration = v)),
-              ],
-            ),
-          ),
-
-          // Result count
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Row(
-              children: [
-                Text(
-                  '${filtered.length} bài học',
-                  style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
+      body: CustomScrollView(
+        slivers: [
+          // ── Gradient Header with Search ──
+          SliverToBoxAdapter(
+            child: Container(
+              decoration: const BoxDecoration(
+                gradient: AppColors.primaryGradient,
+                borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(28),
+                  bottomRight: Radius.circular(28),
                 ),
-                const Spacer(),
-                if (_selectedTopic != 'Tất cả' || _selectedLevel != 'Tất cả' || _selectedDuration != 'Tất cả')
-                  GestureDetector(
-                    onTap: () => setState(() {
-                      _selectedTopic = 'Tất cả';
-                      _selectedLevel = 'Tất cả';
-                      _selectedDuration = 'Tất cả';
-                    }),
-                    child: const Text('Xóa bộ lọc', style: TextStyle(color: AppColors.primary, fontSize: 13)),
-                  ),
-              ],
-            ),
-          ),
-
-          // Lessons list
-          Expanded(
-            child: filtered.isEmpty
-                ? const Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text('📭', style: TextStyle(fontSize: 48)),
-                        SizedBox(height: 8),
-                        Text('Không có bài học phù hợp', style: TextStyle(color: AppColors.textSecondary)),
-                      ],
-                    ),
-                  )
-                : ListView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    itemCount: filtered.length,
-                    itemBuilder: (context, index) {
-                      final lesson = filtered[index];
-                      final originalIndex = lp.lessons.indexOf(lesson);
-                      final progress = lesson['completed'] / lesson['lessons'];
-
-                      return CustomCard(
-                        onTap: () {
-                          lp.startLesson(originalIndex);
-                          context.go('/lesson-detail');
-                        },
-                        padding: const EdgeInsets.all(16),
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 60,
-                              height: 60,
-                              decoration: BoxDecoration(
-                                color: AppColors.primaryLight,
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                              child: Center(
-                                child: Text(lesson['icon'], style: const TextStyle(fontSize: 32)),
+              ),
+              child: SafeArea(
+                bottom: false,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+                  child: Column(
+                    children: [
+                      // ── Profile Row ──
+                      Row(
+                        children: [
+                          Container(
+                            width: 44,
+                            height: 44,
+                            decoration: BoxDecoration(
+                              color: AppColors.secondary.withValues(alpha: 0.5),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Center(
+                              child: Text(
+                                auth.userName.isNotEmpty ? auth.userName[0].toUpperCase() : 'S',
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ),
-                            const SizedBox(width: 14),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    children: [
-                                      Expanded(
-                                        child: Text(
-                                          lesson['title'],
-                                          style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
-                                        ),
-                                      ),
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                        decoration: BoxDecoration(
-                                          color: progress > 0
-                                              ? AppColors.primaryLight
-                                              : AppColors.divider.withValues(alpha: 0.5),
-                                          borderRadius: BorderRadius.circular(10),
-                                        ),
-                                        child: Text(
-                                          progress >= 1.0 ? '✅ Xong' : '${(progress * 100).toInt()}%',
-                                          style: TextStyle(
-                                            fontSize: 11,
-                                            fontWeight: FontWeight.w600,
-                                            color: progress > 0 ? AppColors.primary : AppColors.textLight,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Xin chào',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color: Colors.white.withValues(alpha: 0.85),
                                   ),
-                                  const SizedBox(height: 4),
-                                  Row(
-                                    children: [
-                                      _tag(lesson['level'], AppColors.primaryLight, AppColors.primaryDark),
-                                      const SizedBox(width: 6),
-                                      _tag('${lesson['duration']} phút', AppColors.warningLight, AppColors.warning),
-                                      const SizedBox(width: 6),
-                                      _tag(lesson['topic'], AppColors.infoLight, AppColors.info),
-                                    ],
+                                ),
+                                Text(
+                                  auth.userName.isEmpty ? 'Bạn' : auth.userName,
+                                  style: const TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
                                   ),
-                                  const SizedBox(height: 8),
-                                  ClipRRect(
-                                    borderRadius: BorderRadius.circular(4),
-                                    child: LinearProgressIndicator(
-                                      value: progress,
-                                      minHeight: 5,
-                                      backgroundColor: AppColors.divider,
-                                      valueColor: AlwaysStoppedAnimation(
-                                        progress >= 1.0 ? AppColors.success : AppColors.primary,
-                                      ),
-                                    ),
-                                  ),
-                                ],
+                                ),
+                              ],
+                            ),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.menu, color: Colors.white, size: 28),
+                            onPressed: () {},
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      // ── Search Bar ──
+                      Container(
+                        height: 48,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.25),
+                          borderRadius: BorderRadius.circular(24),
+                        ),
+                        child: Row(
+                          children: [
+                            const SizedBox(width: 16),
+                            Icon(Icons.search, color: Colors.white.withValues(alpha: 0.8), size: 22),
+                            const SizedBox(width: 10),
+                            Text(
+                              'Tìm kiếm bài học...',
+                              style: TextStyle(
+                                color: Colors.white.withValues(alpha: 0.7),
+                                fontSize: 14,
                               ),
                             ),
                           ],
                         ),
-                      );
-                    },
+                      ),
+                    ],
                   ),
+                ),
+              ),
+            ),
           ),
+
+          // ── Lesson Cards ──
+          SliverPadding(
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+            sliver: SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) {
+                  if (index >= lp.lessons.length) return null;
+                  final lesson = lp.lessons[index];
+                  final color = _getColor(lesson);
+                  final progress = lesson['completed'] / lesson['lessons'];
+                  return _lessonCard(context, lesson, index, lp, color, progress);
+                },
+                childCount: lp.lessons.length,
+              ),
+            ),
+          ),
+
+          // Bottom spacing
+          const SliverToBoxAdapter(child: SizedBox(height: 100)),
         ],
       ),
       bottomNavigationBar: const AppBottomNavBar(currentIndex: 1),
     );
   }
 
-  Widget _filterRow(String label, List<String> options, String selected, ValueChanged<String> onSelect) {
-    return Row(
-      children: [
-        SizedBox(
-          width: 70,
-          child: Text(label, style: const TextStyle(fontSize: 12, color: AppColors.textSecondary, fontWeight: FontWeight.w500)),
+  Widget _lessonCard(
+    BuildContext context,
+    Map<String, dynamic> lesson,
+    int index,
+    LessonProvider lp,
+    Color categoryColor,
+    double progress,
+  ) {
+    return GestureDetector(
+      onTap: () {
+        lp.startLesson(index);
+        context.go('/lesson-detail');
+      },
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 14),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: categoryColor.withValues(alpha: 0.06),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: categoryColor.withValues(alpha: 0.3)),
         ),
-        Expanded(
-          child: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: options.map((opt) {
-                final isSelected = selected == opt;
-                return Padding(
-                  padding: const EdgeInsets.only(right: 6),
-                  child: GestureDetector(
-                    onTap: () => onSelect(opt),
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 150),
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: isSelected ? AppColors.primary : Colors.transparent,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: isSelected ? AppColors.primary : AppColors.divider,
-                        ),
-                      ),
-                      child: Text(
-                        opt,
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                          color: isSelected ? Colors.white : AppColors.textSecondary,
-                        ),
-                      ),
+        child: Row(
+          children: [
+            // ── Book Icon ──
+            Container(
+              width: 56,
+              height: 56,
+              decoration: BoxDecoration(
+                color: categoryColor,
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: const Icon(Icons.menu_book_rounded, color: Colors.white, size: 28),
+            ),
+            const SizedBox(width: 14),
+            // ── Content ──
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    lesson['title'],
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: categoryColor,
                     ),
                   ),
-                );
-              }).toList(),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      Text(
+                        lesson['level'] ?? 'Cơ bản',
+                        style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                      ),
+                      const SizedBox(width: 10),
+                      Icon(Icons.access_time, size: 14, color: AppColors.textSecondary),
+                      const SizedBox(width: 4),
+                      Text(
+                        '${lesson['duration'] ?? lesson['lessons'] * 10} phút',
+                        style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  // ── Progress Bar ──
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(4),
+                    child: LinearProgressIndicator(
+                      value: progress,
+                      minHeight: 5,
+                      backgroundColor: categoryColor.withValues(alpha: 0.15),
+                      valueColor: AlwaysStoppedAnimation(categoryColor),
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
+            const SizedBox(width: 10),
+            // ── Chevron ──
+            Icon(Icons.chevron_right, color: categoryColor, size: 24),
+          ],
         ),
-      ],
-    );
-  }
-
-  Widget _tag(String text, Color bg, Color fg) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-      decoration: BoxDecoration(
-        color: bg,
-        borderRadius: BorderRadius.circular(6),
-      ),
-      child: Text(
-        text,
-        style: TextStyle(fontSize: 10, color: fg, fontWeight: FontWeight.w500),
       ),
     );
   }

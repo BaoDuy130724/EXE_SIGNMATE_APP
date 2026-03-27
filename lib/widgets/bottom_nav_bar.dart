@@ -11,12 +11,12 @@ class AppBottomNavBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color(0xFFF3EEFF),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.06),
-            blurRadius: 20,
-            offset: const Offset(0, -4),
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 8,
+            offset: const Offset(0, -2),
           ),
         ],
       ),
@@ -26,15 +26,11 @@ class AppBottomNavBar extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildNavItem(context, 0, Icons.home_rounded, Icons.home_outlined,
-                  'Trang chủ', '/home'),
-              _buildNavItem(context, 1, Icons.menu_book_rounded,
-                  Icons.menu_book_outlined, 'Bài học', '/lesson'),
-              _buildCenterButton(context),
-              _buildNavItem(context, 3, Icons.bar_chart_rounded,
-                  Icons.bar_chart_outlined, 'Tiến độ', '/profile'),
-              _buildNavItem(context, 4, Icons.person_rounded,
-                  Icons.person_outlined, 'Premium', '/premium'),
+              _buildNavItem(context, 0, Icons.home_rounded, Icons.home_outlined, 'Trang chủ', '/home'),
+              _buildNavItem(context, 1, Icons.menu_book_rounded, Icons.menu_book_outlined, 'Bài học', '/lesson'),
+              _buildNavItem(context, 2, Icons.camera_alt_rounded, Icons.camera_alt_outlined, 'Luyện tập', '/practice-camera'),
+              _buildNavItem(context, 3, Icons.bar_chart_rounded, Icons.bar_chart_outlined, 'Tiến độ', '/profile'),
+              _buildNavItem(context, 4, Icons.workspace_premium_rounded, Icons.workspace_premium_outlined, 'Premium', '/premium'),
             ],
           ),
         ),
@@ -56,13 +52,8 @@ class AppBottomNavBar extends StatelessWidget {
         if (!isActive) context.go(route);
       },
       behavior: HitTestBehavior.opaque,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        decoration: BoxDecoration(
-          color: isActive ? AppColors.primaryLight : Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
-        ),
+      child: SizedBox(
+        width: 64,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -71,7 +62,7 @@ class AppBottomNavBar extends StatelessWidget {
               color: isActive ? AppColors.primary : AppColors.textLight,
               size: 24,
             ),
-            const SizedBox(height: 2),
+            const SizedBox(height: 4),
             Text(
               label,
               style: TextStyle(
@@ -81,32 +72,6 @@ class AppBottomNavBar extends StatelessWidget {
               ),
             ),
           ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCenterButton(BuildContext context) {
-    return GestureDetector(
-      onTap: () => context.go('/practice-camera'),
-      child: Container(
-        width: 56,
-        height: 56,
-        decoration: BoxDecoration(
-          gradient: AppColors.primaryGradient,
-          shape: BoxShape.circle,
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.primary.withValues(alpha: 0.4),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: const Icon(
-          Icons.camera_alt_rounded,
-          color: Colors.white,
-          size: 28,
         ),
       ),
     );
