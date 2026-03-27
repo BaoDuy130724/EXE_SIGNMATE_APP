@@ -1,4 +1,5 @@
-import 'dart:io';
+import 'package:flutter/foundation.dart'; // Add kIsWeb
+import 'dart:io' show Platform;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
@@ -17,7 +18,7 @@ class _PracticeCameraScreenState extends State<PracticeCameraScreen> {
   List<CameraDescription> _cameras = [];
   int _cameraIndex = 0;
   
-  final PoseDetector _poseDetector = PoseDetector(options: PoseDetectorOptions());
+  PoseDetector? _poseDetector;
   bool _isDetecting = false;
   bool _isRecording = false;
   
@@ -31,35 +32,60 @@ class _PracticeCameraScreenState extends State<PracticeCameraScreen> {
   @override
   void initState() {
     super.initState();
+    if (!kIsWeb) {
+      _poseDetector = PoseDetector(options: PoseDetectorOptions());
+    }
     _initializeCamera();
   }
 
   Future<void> _initializeCamera() async {
-    _cameras = await availableCameras();
-    if (_cameras.isEmpty) return;
-    
-    // Default to front camera
-    _cameraIndex = _cameras.indexWhere((c) => c.lensDirection == CameraLensDirection.front);
-    if (_cameraIndex == -1) _cameraIndex = 0;
+    try {
+      _cameras = await availableCameras();
+      if (_cameras.isEmpty) {
+        setState(() => _feedback = 'Không tìm thấy camera trên thiết bị này.');
+        return;
+      }
+      
+      // Default to front camera
+      _cameraIndex = _cameras.indexWhere((c) => c.lensDirection == CameraLensDirection.front);
+      if (_cameraIndex == -1) _cameraIndex = 0;
 
-    _startCamera();
+      _startCamera();
+    } catch (e) {
+      if (mounted) setState(() => _feedback = 'Lỗi cấp quyền Camera: $e');
+    }
   }
 
   Future<void> _startCamera() async {
     final camera = _cameras[_cameraIndex];
+    
+    // Choose format group based on platform to prevent UnsupportedError on Web
+    ImageFormatGroup formatGroup = ImageFormatGroup.unknown;
+    if (!kIsWeb) {
+      formatGroup = Platform.isAndroid ? ImageFormatGroup.nv21 : ImageFormatGroup.bgra8888;
+    }
+
     _cameraController = CameraController(
       camera,
       ResolutionPreset.medium,
       enableAudio: false,
-      imageFormatGroup: Platform.isAndroid ? ImageFormatGroup.nv21 : ImageFormatGroup.bgra8888,
+      imageFormatGroup: formatGroup,
     );
 
-    await _cameraController!.initialize();
-    if (!mounted) return;
+    try {
+      await _cameraController!.initialize();
+      if (!mounted) return;
 
-    setState(() {});
+      setState(() {});
 
-    _cameraController!.startImageStream((image) => _processImage(image));
+      if (!kIsWeb) {
+        _cameraController!.startImageStream((image) => _processImage(image));
+      } else {
+        if (mounted) setState(() => _feedback = 'Cảnh báo: Tính năng AI Pose Detection không hoạt động trên trình duyệt Web. Hãy chạy trên Android/iOS.');
+      }
+    } catch (e) {
+      if (mounted) setState(() => _feedback = 'Lỗi mở camera: $e');
+    }
   }
 
   Future<void> _processImage(CameraImage image) async {
@@ -73,9 +99,9 @@ class _PracticeCameraScreenState extends State<PracticeCameraScreen> {
         return;
       }
 
-      final poses = await _poseDetector.processImage(inputImage);
+      final poses = await _poseDetector?.processImage(inputImage);
       
-      if (_isRecording && poses.isNotEmpty) {
+      if (_isRecording && poses != null && poses.isNotEmpty) {
         final pose = poses.first;
         // Extract 33 pose landmarks
         List<Map<String, double>> frameLandmarks = [];
@@ -107,6 +133,7 @@ class _PracticeCameraScreenState extends State<PracticeCameraScreen> {
   };
 
   InputImage? _inputImageFromCameraImage(CameraImage image) {
+    if (kIsWeb) return null;
     if (_cameraController == null) return null;
     final camera = _cameras[_cameraIndex];
     final sensorOrientation = camera.sensorOrientation;
@@ -153,7 +180,7 @@ class _PracticeCameraScreenState extends State<PracticeCameraScreen> {
   @override
   void dispose() {
     _cameraController?.dispose();
-    _poseDetector.close();
+    _poseDetector?.close();
     super.dispose();
   }
   
