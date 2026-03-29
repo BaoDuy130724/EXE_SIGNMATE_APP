@@ -4,9 +4,8 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 class ApiConfig {
   // .NET Backend API
   static String get baseUrl {
-    if (kIsWeb) return 'https://localhost:7122/api';
-    if (Platform.isAndroid) return 'http://10.0.2.2:5184/api';
-    return 'http://localhost:5184/api';
+    // .NET Backend API đã Deploy lên RunAsp
+    return 'http://signmate.runasp.net/api';
   }
 
   // Python AI Service (direct call for real-time scoring)
