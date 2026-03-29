@@ -189,7 +189,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   _nextStep();
                 }
               } catch (e) {
-                if (!context.mounted) return;
+                if (!mounted) return;
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Lỗi xử lý yêu cầu. Vui lòng thử lại.')),
                 );
