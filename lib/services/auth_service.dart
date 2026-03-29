@@ -18,8 +18,14 @@ class AuthService {
 
     // Backend returns TokenResponse (accessToken, refreshToken, expiresAt)
     final token = response['accessToken'];
+    final refreshToken = response['refreshToken'];
+    
     if (token != null) {
-      await _apiClient.saveToken(token);
+      if (refreshToken != null) {
+        await _apiClient.saveTokens(token, refreshToken);
+      } else {
+        await _apiClient.saveToken(token);
+      }
     } else {
       throw Exception('No access token received from server.');
     }
@@ -47,8 +53,14 @@ class AuthService {
     );
 
     final token = response['accessToken'];
+    final refreshToken = response['refreshToken'];
+    
     if (token != null) {
-      await _apiClient.saveToken(token);
+      if (refreshToken != null) {
+        await _apiClient.saveTokens(token, refreshToken);
+      } else {
+        await _apiClient.saveToken(token);
+      }
       return await getMe(); // If backend auto-logs in, get profile
     }
 

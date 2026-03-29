@@ -215,15 +215,8 @@ class CenterClassesScreen extends StatelessWidget {
                         const Icon(Icons.people_outline, size: 14, color: AppColors.textSecondary),
                         const SizedBox(width: 4),
                         Text(
-                          '${cls.studentCount}',
+                          '${cls.studentCount} học viên',
                           style: const TextStyle(color: AppColors.textSecondary, fontSize: 12),
-                        ),
-                        const SizedBox(width: 10),
-                        const Icon(Icons.trending_up, size: 14, color: AppColors.success),
-                        const SizedBox(width: 4),
-                        Text(
-                          '${cls.completionPercent}%',
-                          style: const TextStyle(color: AppColors.success, fontSize: 12, fontWeight: FontWeight.w500),
                         ),
                       ],
                     ),
@@ -231,19 +224,6 @@ class CenterClassesScreen extends StatelessWidget {
                 ),
               ),
             ],
-          ),
-          const SizedBox(height: 12),
-          // Progress bar
-          ClipRRect(
-            borderRadius: BorderRadius.circular(4),
-            child: LinearProgressIndicator(
-              value: cls.completionPercent / 100,
-              minHeight: 5,
-              backgroundColor: AppColors.divider,
-              valueColor: AlwaysStoppedAnimation(
-                cls.completionPercent >= 80 ? AppColors.success : AppColors.primary,
-              ),
-            ),
           ),
           const SizedBox(height: 10),
           Row(

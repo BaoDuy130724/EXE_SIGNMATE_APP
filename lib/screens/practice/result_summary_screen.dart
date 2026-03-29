@@ -14,11 +14,10 @@ class ResultSummaryScreen extends StatelessWidget {
     final auth = context.watch<AuthProvider>();
     final lesson = context.watch<LessonProvider>();
 
-    // Mock data
     final int correct = lesson.correctAnswers;
     final int wrong = lesson.totalQuestions - lesson.correctAnswers;
     final int total = lesson.totalQuestions;
-    final double accuracy = total > 0 ? (correct / total * 100) : 80;
+    final double accuracy = total > 0 ? (correct / total * 100) : 0;
     final int xpEarned = correct * 10;
 
     return Scaffold(
@@ -138,9 +137,12 @@ class ResultSummaryScreen extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 12),
-                    _mistakeItem('Tư thế tay chưa chính xác', 2),
-                    const SizedBox(height: 6),
-                    _mistakeItem('Tốc độ di chuyển quá nhanh', 1),
+                    if (lesson.mistakes.isEmpty)
+                      _mistakeItem('Cần chú ý hơn các động tác sai', wrong)
+                    else
+                      ...lesson.mistakes.map((m) => Padding(
+                          padding: const EdgeInsets.only(bottom: 6),
+                          child: _mistakeItem(m, 1))),
                   ],
                 ),
               ),

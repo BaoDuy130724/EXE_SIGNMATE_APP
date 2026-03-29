@@ -106,23 +106,29 @@ class _CompleteScreenState extends State<CompleteScreen>
                       // Quick stats
                       CustomCard(
                         padding: const EdgeInsets.all(20),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            _stat('📚', '8', 'Chủ đề'),
-                            Container(
-                              width: 1,
-                              height: 40,
-                              color: AppColors.divider,
-                            ),
-                            _stat('🎯', '100+', 'Bài học'),
-                            Container(
-                              width: 1,
-                              height: 40,
-                              color: AppColors.divider,
-                            ),
-                            _stat('🤖', 'AI', 'Hỗ trợ'),
-                          ],
+                        child: Builder(
+                          builder: (ctx) {
+                            final lessonProv = ctx.watch<LessonProvider>();
+                            final courseCount = lessonProv.lessons.length;
+                            return Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                _stat('📚', '$courseCount', 'Chủ đề'),
+                                Container(
+                                  width: 1,
+                                  height: 40,
+                                  color: AppColors.divider,
+                                ),
+                                _stat('🎯', '$courseCount', 'Khóa học'),
+                                Container(
+                                  width: 1,
+                                  height: 40,
+                                  color: AppColors.divider,
+                                ),
+                                _stat('🤖', 'AI', 'Hỗ trợ'),
+                              ],
+                            );
+                          },
                         ),
                       ),
                     ],

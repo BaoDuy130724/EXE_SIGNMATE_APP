@@ -283,7 +283,17 @@ class _HomeScreenState extends State<HomeScreen> {
               color: AppColors.primaryLight,
               borderRadius: BorderRadius.circular(14),
             ),
-            child: Center(child: Text(lesson['icon'], style: const TextStyle(fontSize: 26))),
+            child: Center(
+              child: lesson['icon'].toString().contains('assets/')
+                  ? Image.asset(
+                      lesson['icon'], 
+                      height: 26, 
+                      width: 26, 
+                      fit: BoxFit.contain,
+                      errorBuilder: (context, error, stackTrace) => const Icon(Icons.menu_book, size: 26, color: AppColors.primary)
+                    )
+                  : Text(lesson['icon'], style: const TextStyle(fontSize: 26)),
+            ),
           ),
           const SizedBox(width: 14),
           Expanded(

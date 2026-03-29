@@ -70,10 +70,13 @@ class _SplashScreenState extends State<SplashScreen>
       if (auth.isLoggedIn) {
         // Pre-fetch real courses from API
         context.read<LessonProvider>().loadCourses();
-        if (auth.userRole == 'center_admin') {
+        final role = auth.userRole.toLowerCase().replaceAll('_', '');
+        if (role == 'centeradmin') {
           context.go('/center-home');
-        } else if (auth.userRole == 'teacher') {
+        } else if (role == 'teacher') {
           context.go('/teacher-home');
+        } else if (role == 'superadmin' || role == 'admin') {
+          context.go('/admin-home');
         } else {
           context.go('/home');
         }

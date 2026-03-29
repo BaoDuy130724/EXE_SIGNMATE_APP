@@ -20,8 +20,7 @@ class _LoginScreenState extends State<LoginScreen>
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
   bool _isLoading = false;
-  String _selectedRole = 'student';
-  String? _errorMessage;
+String? _errorMessage;
 
   late AnimationController _fadeController;
   late Animation<double> _fadeAnim;
@@ -94,30 +93,6 @@ class _LoginScreenState extends State<LoginScreen>
                         TextStyle(fontSize: 14, color: AppColors.textSecondary),
                   ),
                   const SizedBox(height: 32),
-
-                  // Role selector
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(14),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.04),
-                          blurRadius: 8,
-                        ),
-                      ],
-                    ),
-                    padding: const EdgeInsets.all(4),
-                    child: Row(
-                      children: [
-                        _roleTab('Học viên', 'student'),
-                        _roleTab('Trung Tâm', 'center'),
-                        _roleTab('Giáo viên', 'teacher'),
-                        _roleTab('Admin', 'admin'),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 24),
 
                   // Error message
                   if (_errorMessage != null)
@@ -274,31 +249,6 @@ class _LoginScreenState extends State<LoginScreen>
     );
   }
 
-  Widget _roleTab(String label, String role) {
-    final isSelected = _selectedRole == role;
-    return Expanded(
-      child: GestureDetector(
-        onTap: () => setState(() => _selectedRole = role),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.symmetric(vertical: 10),
-          decoration: BoxDecoration(
-            color: isSelected ? AppColors.primary : Colors.transparent,
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Text(
-            label,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: isSelected ? Colors.white : AppColors.textSecondary,
-              fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-              fontSize: 13,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
 
   Future<void> _handleLogin() async {
     if (!_formKey.currentState!.validate()) return;
@@ -310,8 +260,7 @@ class _LoginScreenState extends State<LoginScreen>
 
     try {
       final auth = context.read<AuthProvider>();
-      auth.setRole(_selectedRole);
-      final success = await auth.login(
+final success = await auth.login(
         _emailController.text,
         _passwordController.text,
       );
@@ -321,11 +270,13 @@ class _LoginScreenState extends State<LoginScreen>
       if (success) {
         // Pre-fetch courses from API
         context.read<LessonProvider>().loadCourses();
-        final role = auth.userRole;
-        if (role == 'center_admin') {
+        final role = auth.userRole.toLowerCase().replaceAll('_', '');
+        if (role == 'centeradmin') {
           context.go('/center-home');
         } else if (role == 'teacher') {
           context.go('/teacher-home');
+        } else if (role == 'superadmin' || role == 'admin') {
+          context.go('/admin-home');
         } else {
           context.go('/home');
         }

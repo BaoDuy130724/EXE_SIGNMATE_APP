@@ -1,3 +1,5 @@
+import 'sign_model.dart';
+
 class LessonModel {
   final String id;
   final String title;
@@ -7,6 +9,7 @@ class LessonModel {
   final String level;
   final String image;
   final String content;
+  final List<SignModel> signs;
 
   LessonModel({
     required this.id,
@@ -17,6 +20,7 @@ class LessonModel {
     required this.level,
     required this.image,
     required this.content,
+    this.signs = const [],
   });
 
   factory LessonModel.fromJson(Map<String, dynamic> json) {
@@ -29,6 +33,10 @@ class LessonModel {
       level: json['level'] ?? 'Người mới bắt đầu',
       image: json['image'] ?? 'assets/images/lessons/default.jpg',
       content: json['content'] ?? '',
+      signs: (json['signs'] as List<dynamic>?)
+              ?.map((e) => SignModel.fromJson(e as Map<String, dynamic>))
+              .toList() ??
+          [],
     );
   }
 
@@ -42,6 +50,7 @@ class LessonModel {
       'level': level,
       'image': image,
       'content': content,
+      'signs': signs.map((e) => e.toJson()).toList(),
     };
   }
 }

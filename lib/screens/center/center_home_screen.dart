@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../providers/center_provider.dart';
+import '../../providers/auth_provider.dart';
 import '../../utils/app_colors.dart';
 import '../../widgets/common_widgets.dart';
 import '../../widgets/center_bottom_nav_bar.dart';
@@ -26,8 +27,11 @@ class CenterHomeScreen extends StatelessWidget {
             automaticallyImplyLeading: false,
             actions: [
               IconButton(
-                icon: const Icon(Icons.menu, color: Colors.white),
-                onPressed: () {},
+                icon: const Icon(Icons.logout, color: Colors.white),
+                onPressed: () async {
+                  await context.read<AuthProvider>().logout();
+                  if (context.mounted) context.go('/login');
+                },
               ),
             ],
             flexibleSpace: FlexibleSpaceBar(
@@ -60,7 +64,9 @@ class CenterHomeScreen extends StatelessWidget {
                                 style: TextStyle(fontSize: 13, color: Colors.white70),
                               ),
                               Text(
-                                center.centerName,
+                                center.centerName.isEmpty 
+                                  ? context.watch<AuthProvider>().userName 
+                                  : center.centerName,
                                 style: const TextStyle(
                                   fontSize: 20,
                                   fontWeight: FontWeight.bold,
@@ -90,7 +96,7 @@ class CenterHomeScreen extends StatelessWidget {
                     children: [
                       _statBubble('📊', '${center.totalClasses}', 'Lớp quản lý', AppColors.primary),
                       const SizedBox(width: 12),
-                      _statBubble('⭐', '${ center.totalXp}', 'XP cộng', AppColors.xpGold),
+                      _statBubble('⏰', '${center.totalPracticeMinutes}', 'Phút luyện', AppColors.xpGold),
                       const SizedBox(width: 12),
                       _statBubble('👥', '${center.activeStudents}', 'HS hoạt động', AppColors.success),
                       const SizedBox(width: 12),
@@ -110,7 +116,7 @@ class CenterHomeScreen extends StatelessWidget {
                       style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
                     TextButton(
-                      onPressed: () => context.go('/center-classes'),
+                      onPressed: () => context.push('/center-classes'),
                       child: const Text('Xem tất cả', style: TextStyle(color: AppColors.primary)),
                     ),
                   ],
@@ -178,7 +184,7 @@ class CenterHomeScreen extends StatelessWidget {
     return CustomCard(
       onTap: () {
         center.selectClass(index);
-        context.go('/center-class-detail');
+        context.push('/center-class-detail');
       },
       padding: const EdgeInsets.all(16),
       child: Row(
@@ -202,23 +208,16 @@ class CenterHomeScreen extends StatelessWidget {
                   style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
                 ),
                 const SizedBox(height: 4),
-                Row(
-                  children: [
-                    const Icon(Icons.people_outline, size: 14, color: AppColors.textSecondary),
-                    const SizedBox(width: 4),
-                    Text(
-                      '${cls.studentCount}',
-                      style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
+                    Row(
+                      children: [
+                        const Icon(Icons.people_outline, size: 14, color: AppColors.textSecondary),
+                        const SizedBox(width: 4),
+                        Text(
+                          '${cls.studentCount} học viên',
+                          style: const TextStyle(color: AppColors.textSecondary, fontSize: 13),
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: 12),
-                    const Icon(Icons.trending_up, size: 14, color: AppColors.success),
-                    const SizedBox(width: 4),
-                    Text(
-                      '${cls.completionPercent}%',
-                      style: const TextStyle(color: AppColors.success, fontSize: 13, fontWeight: FontWeight.w500),
-                    ),
-                  ],
-                ),
               ],
             ),
           ),

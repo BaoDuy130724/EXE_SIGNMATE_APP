@@ -4,14 +4,12 @@ import '../services/center_service.dart';
 class CenterStudent {
   final String name;
   final int accuracy;
-  final List<String> topics;
   final int weeklyPractice;
   final bool isOnline;
 
   const CenterStudent({
     required this.name,
     required this.accuracy,
-    required this.topics,
     required this.weeklyPractice,
     this.isOnline = false,
   });
@@ -19,16 +17,12 @@ class CenterStudent {
 
 class CenterClass {
   final String name;
-  final String level;
   final int studentCount;
-  final int completionPercent;
   final List<CenterStudent> students;
 
   const CenterClass({
     required this.name,
-    required this.level,
     required this.studentCount,
-    required this.completionPercent,
     required this.students,
   });
 }
@@ -41,6 +35,12 @@ class CenterProvider extends ChangeNotifier {
 
   String _centerName = 'Trung Tâm';
   int _selectedClassIndex = 0;
+  int _totalSeats = 0;
+  int _totalStudents = 0;
+  int _activeLearners = 0;
+  double _averageAccuracy = 0;
+  int _totalPracticeMinutes = 0;
+  int _newStudentsThisMonth = 0;
 
   String get centerName => _centerName;
   int get selectedClassIndex => _selectedClassIndex;
@@ -55,26 +55,28 @@ class CenterProvider extends ChangeNotifier {
       final center = await _centerService.getCenterDashboard(centerId);
       final apiClasses = await _centerService.getClasses(centerId);
 
-      _centerName = center.name;
+      _centerName = center['centerName']?.toString() ?? 'Trung Tâm';
+      _totalSeats = center['maxSeats'] as int? ?? 0;
+      _totalStudents = center['totalStudents'] as int? ?? 0;
+      _activeLearners = center['activeLearners'] as int? ?? 0;
+      _averageAccuracy = (center['averageAccuracy'] as num?)?.toDouble() ?? 0.0;
+      _totalPracticeMinutes = center['totalPracticeMinutes'] as int? ?? 0;
+      _newStudentsThisMonth = center['newStudentsThisMonth'] as int? ?? 0;
 
-      // Map real API data to the UI structure expected by screens
+      // Map real API data to the UI structure
       _classes = apiClasses.map((cls) {
          return CenterClass(
            name: cls.name,
-           level: 'N/A', // Assuming level isn't returned from ClassModel yet
            studentCount: cls.studentCount,
-           completionPercent: 0, // Should be fetched from analytics API
            students: cls.students.map((student) => CenterStudent(
              name: student.name,
              accuracy: student.practiceAccuracy,
-             topics: ['Chung'],
-             weeklyPractice: 0, 
+             weeklyPractice: 0,
              isOnline: false,
            )).toList(),
          );
       }).toList();
 
-      // If API returns no classes, list is empty. No more fallback mocks!
     } catch (e) {
       debugPrint('Error loading center dashboard: $e');
     } finally {
@@ -83,23 +85,25 @@ class CenterProvider extends ChangeNotifier {
     }
   }
 
-  // Stats
+  // Stats — all from API
   int get totalClasses => _classes.length;
-  int get totalStudents => _classes.fold(0, (sum, c) => sum + c.studentCount);
-  int get totalXp => 0;
-  int get activeStudents => 0;
-  int get totalSeats => 0;
-  int get avgAccuracy => 0;
-  int get totalPracticeMinutes => 0;
-  int get totalFeeCollected => 0;
+  int get totalStudents => _totalStudents;
+  int get activeStudents => _activeLearners;
+  int get totalSeats => _totalSeats;
+  int get avgAccuracy => _averageAccuracy.toInt();
+  int get totalPracticeMinutes => _totalPracticeMinutes;
+  int get newStudentsThisMonth => _newStudentsThisMonth;
 
-  // Report data
-  int get newStudentsThisMonth => 0;
-  int get completionRate => 0;
-  int get reportAccuracy => 0;
+  // Report data — derived from dashboard API
+  int get completionRate => _totalStudents > 0 && _activeLearners > 0
+      ? (_activeLearners * 100 ~/ _totalStudents)
+      : 0;
+  int get reportAccuracy => _averageAccuracy.toInt();
 
   List<CenterClass> get classes => _classes;
-  CenterClass get selectedClass => _classes.isNotEmpty ? _classes[_selectedClassIndex] : const CenterClass(name: '', level: '', studentCount: 0, completionPercent: 0, students: []);
+  CenterClass get selectedClass => _classes.isNotEmpty
+      ? _classes[_selectedClassIndex]
+      : const CenterClass(name: '', studentCount: 0, students: []);
 
   List<CenterStudent> get allStudents {
     final all = <CenterStudent>[];

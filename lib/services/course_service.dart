@@ -15,7 +15,8 @@ class CourseService {
       query = '?${params.join('&')}';
     }
 
-    final response = await _apiClient.get('/courses$query', requiresAuth: false);
+    final response =
+        await _apiClient.get('/courses$query', requiresAuth: false);
     if (response is List) {
       return response.map((e) => CourseModel.fromJson(e)).toList();
     }
@@ -30,7 +31,8 @@ class CourseService {
 
   /// Fetches all lessons for a specific course
   Future<List<LessonModel>> getLessonsForCourse(String courseId) async {
-    final response = await _apiClient.get('/courses/$courseId/lessons', requiresAuth: false);
+    final response =
+        await _apiClient.get('/courses/$courseId/lessons', requiresAuth: false);
     if (response is List) {
       return response.map((e) => LessonModel.fromJson(e)).toList();
     }
@@ -55,7 +57,8 @@ class CourseService {
   }
 
   /// Update a course (Teacher, Admin)
-  Future<CourseModel> updateCourse(String id, Map<String, dynamic> courseData) async {
+  Future<CourseModel> updateCourse(
+      String id, Map<String, dynamic> courseData) async {
     final response = await _apiClient.put('/courses/$id', body: courseData);
     return CourseModel.fromJson(response);
   }
@@ -64,5 +67,11 @@ class CourseService {
   Future<List<dynamic>> getMyEnrollments() async {
     final response = await _apiClient.get('/enrollments/me');
     return response is List ? response : [];
+  }
+
+  /// Upload Reference Video for AI Dataset (Teacher, Admin)
+  Future<Map<String, dynamic>> uploadSignReferenceVideo(String signId, String videoPath) async {
+    final response = await _apiClient.postMultipart('/vocabulary/$signId/upload-reference', filePath: videoPath);
+    return response as Map<String, dynamic>;
   }
 }

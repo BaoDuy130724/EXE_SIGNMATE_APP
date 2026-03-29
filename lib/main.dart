@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import 'providers/auth_provider.dart';
 import 'providers/lesson_provider.dart';
 import 'providers/center_provider.dart';
+import 'providers/teacher_provider.dart';
+import 'providers/admin_provider.dart';
 import 'providers/theme_provider.dart';
 import 'utils/app_router.dart';
 import 'utils/app_theme.dart';
@@ -25,6 +27,8 @@ class SignLanguageApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => LessonProvider()),
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider(create: (_) => CenterProvider()),
+        ChangeNotifierProvider(create: (_) => TeacherProvider()),
+        ChangeNotifierProvider(create: (_) => AdminProvider()),
       ],
       child: Consumer<ThemeProvider>(
         builder: (context, themeProvider, child) {

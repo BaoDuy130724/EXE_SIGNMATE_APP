@@ -158,18 +158,6 @@ class _CenterStudentsScreenState extends State<CenterStudentsScreen> {
                   style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w600, height: 1.3),
                 ),
               ),
-              ...student.topics.map((topic) => Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: AppColors.primaryLight,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  '$topic\nCo.bản',
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(color: AppColors.primaryDark, fontSize: 10, height: 1.3),
-                ),
-              )),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(

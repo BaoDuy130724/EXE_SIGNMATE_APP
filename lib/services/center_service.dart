@@ -14,10 +14,9 @@ class CenterService {
     return [];
   }
 
-  /// Get details and dashboard stats for a specific center
-  Future<CenterModel> getCenterDashboard(String id) async {
+  Future<Map<String, dynamic>> getCenterDashboard(String id) async {
     final response = await _apiClient.get('/centers/$id/dashboard');
-    return CenterModel.fromJson(response);
+    return response as Map<String, dynamic>;
   }
 
   /// Get classes for a specific center

@@ -3,14 +3,14 @@ import 'package:provider/provider.dart';
 import '../../providers/lesson_provider.dart';
 import '../../utils/app_colors.dart';
 
-class TeacherLessonsScreen extends StatefulWidget {
-  const TeacherLessonsScreen({super.key});
+class AdminLessonsScreen extends StatefulWidget {
+  const AdminLessonsScreen({super.key});
 
   @override
-  State<TeacherLessonsScreen> createState() => _TeacherLessonsScreenState();
+  State<AdminLessonsScreen> createState() => _AdminLessonsScreenState();
 }
 
-class _TeacherLessonsScreenState extends State<TeacherLessonsScreen> {
+class _AdminLessonsScreenState extends State<AdminLessonsScreen> {
   @override
   void initState() {
     super.initState();
@@ -26,9 +26,9 @@ class _TeacherLessonsScreenState extends State<TeacherLessonsScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: AppColors.primary,
+        backgroundColor: AppColors.primaryDark,
         foregroundColor: Colors.white,
-        title: const Text('Quản lý bài học'),
+        title: const Text('Quản lý Bài học'),
       ),
       body: lp.isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -48,17 +48,12 @@ class _TeacherLessonsScreenState extends State<TeacherLessonsScreen> {
                           child: Text('${i + 1}'),
                         ),
                         title: Text(
-                          course['title']?.toString() ?? 'Khóa ${i + 1}',
+                          course['title']?.toString() ?? '',
                           style: const TextStyle(fontWeight: FontWeight.w600),
                         ),
                         subtitle: Text(
                           '${course['lessons'] ?? 0} bài · ${course['level'] ?? ''}',
                           style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
-                        ),
-                        trailing: PopupMenuButton(
-                          itemBuilder: (_) => [
-                            const PopupMenuItem(child: Text('Xem chi tiết')),
-                          ],
                         ),
                       ),
                     );

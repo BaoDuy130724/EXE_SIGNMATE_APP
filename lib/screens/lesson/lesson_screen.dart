@@ -133,7 +133,15 @@ class _LessonScreenState extends State<LessonScreen> {
                                 borderRadius: BorderRadius.circular(16),
                               ),
                               child: Center(
-                                child: Text(lesson['icon'], style: const TextStyle(fontSize: 32)),
+                                child: lesson['icon'].toString().contains('assets/')
+                                    ? Image.asset(
+                                        lesson['icon'], 
+                                        height: 32, 
+                                        width: 32, 
+                                        fit: BoxFit.contain,
+                                        errorBuilder: (context, error, stackTrace) => const Icon(Icons.menu_book, size: 32, color: AppColors.primary)
+                                      )
+                                    : Text(lesson['icon'], style: const TextStyle(fontSize: 32)),
                               ),
                             ),
                             const SizedBox(width: 14),

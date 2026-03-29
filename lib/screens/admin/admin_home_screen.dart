@@ -1,12 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+import '../../providers/auth_provider.dart';
+import '../../providers/admin_provider.dart';
 import '../../utils/app_colors.dart';
 
-class AdminHomeScreen extends StatelessWidget {
+class AdminHomeScreen extends StatefulWidget {
   const AdminHomeScreen({super.key});
 
   @override
+  State<AdminHomeScreen> createState() => _AdminHomeScreenState();
+}
+
+class _AdminHomeScreenState extends State<AdminHomeScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<AdminProvider>().loadDashboard();
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final userName = context.watch<AuthProvider>().userName;
+    final admin = context.watch<AdminProvider>();
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -16,11 +34,16 @@ class AdminHomeScreen extends StatelessWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
-            onPressed: () => context.go('/login'),
+            onPressed: () async {
+              await context.read<AuthProvider>().logout();
+              if (context.mounted) context.go('/login');
+            },
           ),
         ],
       ),
-      body: SingleChildScrollView(
+      body: admin.isLoading 
+        ? const Center(child: CircularProgressIndicator())
+        : SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -28,44 +51,44 @@ class AdminHomeScreen extends StatelessWidget {
             // UC-19: Stats row 1
             Row(
               children: [
-                _statCard('👥', '1,234', 'Tổng users', AppColors.primary),
+                _statCard('👥', '${admin.totalUsers}', 'Tổng users', AppColors.primary),
                 const SizedBox(width: 12),
-                _statCard('💰', '12.5M', 'Doanh thu', AppColors.success),
+                _statCard('💰', '${(admin.totalRevenue / 1000000).toStringAsFixed(1)}M', 'Doanh thu', AppColors.success),
               ],
             ),
             const SizedBox(height: 12),
             // Stats row 2
             Row(
               children: [
-                _statCard('🏢', '8', 'Trung tâm', AppColors.info),
+                _statCard('🏢', '${admin.activeCenters}', 'Trung tâm', AppColors.info),
                 const SizedBox(width: 12),
-                _statCard('📈', '89%', 'Conversion', AppColors.streakOrange),
+                _statCard('📈', '${admin.conversionRate}%', 'Conversion', AppColors.streakOrange),
               ],
             ),
             const SizedBox(height: 12),
             // Stats row 3
             Row(
               children: [
-                _statCard('⭐', '156', 'Premium', AppColors.xpGold),
+                _statCard('⭐', '${admin.premiumUsers}', 'Premium', AppColors.xpGold),
                 const SizedBox(width: 12),
-                _statCard('📊', '78%', 'Retention', AppColors.levelPurple),
+                _statCard('📊', '${admin.retentionRate}%', 'Retention', AppColors.levelPurple),
               ],
             ),
 
             const SizedBox(height: 24),
-            const Text(
-              'Quản lý hệ thống',
-              style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+            Text(
+              'Quản lý hệ thống - $userName',
+              style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
 
             // UC-20: CRUD menus
             _menuItem(context, Icons.assessment, 'Báo cáo thống kê', '/admin-reports'),
-            _menuItem(context, Icons.people, 'Quản lý Users', '/admin-reports'),
-            _menuItem(context, Icons.business, 'Quản lý Centers', '/admin-reports'),
-            _menuItem(context, Icons.card_membership, 'Quản lý Plans', '/admin-reports'),
-            _menuItem(context, Icons.school, 'Quản lý Bài học', '/admin-reports'),
-            _menuItem(context, Icons.content_paste, 'Quản lý Content', '/admin-reports'),
+            _menuItem(context, Icons.people, 'Quản lý Users', '/admin-users'),
+            _menuItem(context, Icons.business, 'Quản lý Centers', '/admin-centers'),
+            _menuItem(context, Icons.card_membership, 'Quản lý Plans', '/admin-plans'),
+            _menuItem(context, Icons.school, 'Quản lý Bài học', '/admin-lessons'),
+            _menuItem(context, Icons.content_paste, 'Quản lý Content', '/admin-content'),
           ],
         ),
       ),
@@ -125,7 +148,7 @@ class AdminHomeScreen extends StatelessWidget {
         leading: Icon(icon, color: AppColors.primary),
         title: Text(title),
         trailing: const Icon(Icons.chevron_right),
-        onTap: () => context.go(route),
+        onTap: () => context.push(route),
       ),
     );
   }

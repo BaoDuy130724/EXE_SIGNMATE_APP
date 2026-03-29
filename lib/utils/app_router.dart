@@ -26,8 +26,14 @@ import '../screens/game/game_screen.dart';
 import '../screens/admin/admin_login_screen.dart';
 import '../screens/admin/admin_home_screen.dart';
 import '../screens/admin/admin_reports_screen.dart';
+import '../screens/admin/admin_users_screen.dart';
+import '../screens/admin/admin_centers_screen.dart';
+import '../screens/admin/admin_plans_screen.dart';
+import '../screens/admin/admin_lessons_screen.dart';
+import '../screens/admin/admin_content_screen.dart';
 import '../screens/teacher/teacher_login_screen.dart';
 import '../screens/teacher/teacher_home_screen.dart';
+import '../screens/teacher/teacher_vocabulary_screen.dart';
 import '../screens/teacher/teacher_class_screen.dart';
 import '../screens/teacher/teacher_students_screen.dart';
 import '../screens/teacher/teacher_lessons_screen.dart';
@@ -92,6 +98,11 @@ class AppRouter {
       GoRoute(path: '/admin-login', builder: (_, __) => const AdminLoginScreen()),
       GoRoute(path: '/admin-home', builder: (_, __) => const AdminHomeScreen()),
       GoRoute(path: '/admin-reports', builder: (_, __) => const AdminReportsScreen()),
+      GoRoute(path: '/admin-users', builder: (_, __) => const AdminUsersScreen()),
+      GoRoute(path: '/admin-centers', builder: (_, __) => const AdminCentersScreen()),
+      GoRoute(path: '/admin-plans', builder: (_, __) => const AdminPlansScreen()),
+      GoRoute(path: '/admin-lessons', builder: (_, __) => const AdminLessonsScreen()),
+      GoRoute(path: '/admin-content', builder: (_, __) => const AdminContentScreen()),
 
       // Teacher
       GoRoute(path: '/teacher-login', builder: (_, __) => const TeacherLoginScreen()),
@@ -100,6 +111,7 @@ class AppRouter {
       GoRoute(path: '/teacher-students', builder: (_, __) => const TeacherStudentsScreen()),
       GoRoute(path: '/teacher-lessons', builder: (_, __) => const TeacherLessonsScreen()),
       GoRoute(path: '/teacher-feedback', builder: (_, __) => const TeacherFeedbackScreen()),
+      GoRoute(path: '/teacher-vocabulary', builder: (_, __) => const TeacherVocabularyScreen()),
 
       // Center
       GoRoute(path: '/center-home', builder: (_, __) => const CenterHomeScreen()),
